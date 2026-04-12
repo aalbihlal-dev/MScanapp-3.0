@@ -576,7 +576,11 @@ function compressBlob(blob,maxD,q){
       var W=img.naturalWidth,H=img.naturalHeight,sc=Math.min(1,maxD/Math.max(W,H));
       var c=document.createElement('canvas');c.width=Math.round(W*sc);c.height=Math.round(H*sc);
       c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      c.toBlob(function(b){ok(b||null)},'image/jpeg',q);
+      c.toBlob(function(b){
+        /* Release canvas memory immediately — iOS Safari won't GC it otherwise */
+        c.width=0;c.height=0;c=null;img=null;
+        ok(b||null);
+      },'image/jpeg',q);
     };
     img.onerror=function(){URL.revokeObjectURL(u);ok(null)};
     img.src=u;
@@ -604,6 +608,7 @@ function rotateBlob90(blob){
       ctx.rotate(Math.PI/2);
       ctx.drawImage(img,0,0,W,H);
       c.toBlob(function(b){
+        c.width=0;c.height=0;c=null;img=null;
         if(b)ok(b);else fail(new Error('Canvas toBlob failed'));
       },'image/jpeg',0.92);
     };
@@ -799,11 +804,15 @@ function updDoneBtn(){
   db.className='btn b-done'+(isDone?' mk':'');
 }
 function toggleDone(){
-  var meta=mvpsMeta[curId]||{status:'progress'},ns=meta.status==='done'?'progress':'done';
-  if(ns==='done'&&!mods.filter(function(m){return m.ok}).length){notify('No confirmed modules yet','warn');return}
-  var ok=mods.filter(function(m){return m.ok}).length;
-  dbSaveMeta(curId,ns,ok);updDoneBtn();updHomeCard(curId);
-  notify(ns==='done'?'MVPS-'+curId+' marked done':'Marked as in progress');
+  /* Flush any pending deferred meta update first */
+  clearTimeout(_metaTimer);
+  try{
+    var meta=mvpsMeta[curId]||{status:'progress'},ns=meta.status==='done'?'progress':'done';
+    if(ns==='done'&&!mods.filter(function(m){return m.ok}).length){notify('No confirmed modules yet','warn');return}
+    var ok=mods.filter(function(m){return m.ok}).length;
+    dbSaveMeta(curId,ns,ok);updDoneBtn();updHomeCard(curId);
+    notify(ns==='done'?'MVPS-'+curId+' marked done':'Marked as in progress');
+  }catch(e){console.error('toggleDone',e);notify('Error marking done','warn')}
 }
 
 /* ─────────────────────────────────────────────
@@ -881,11 +890,15 @@ function buildCard(m){
 
 function render(id){var m=getM(id);if(!m)return;var ex=document.getElementById('C'+id);if(ex)ex.outerHTML=buildCard(m);recount()}
 function updSN(id,v){var m=getM(id);if(m)m.sn=v.trim().toUpperCase();var b=document.getElementById('bs'+id);if(b)b.disabled=!v.trim()}
-function setMod(id){var m=getM(id);if(!m||!m.sn)return;m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSave(m);flashSaved();updMeta();render(id);updBulkBadge();notify('N'+m.num+' confirmed: '+m.sn)}
+function setMod(id){var m=getM(id);if(!m||!m.sn)return;m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();notify('N'+m.num+' confirmed: '+m.sn)}
 function startEdit(id){var m=getM(id);if(m)m.editing=true;render(id);setTimeout(function(){var e=document.getElementById('ei'+id);if(e){e.focus();e.select()}},80)}
 function doneEdit(id){var m=getM(id);if(!m)return;var e=document.getElementById('ei'+id);if(e&&e.value.trim())m.sn=e.value.trim().toUpperCase();m.editing=false;dbSave(m);flashSaved();render(id);notify('N'+m.num+' updated: '+m.sn)}
 function recount(){var ok=mods.filter(function(m){return m.ok}).length;document.getElementById('mvSub').textContent='MVPS \u00B7 '+ok+'/'+mods.length+' confirmed'}
+/* Debounced updMeta — prevents IDB + DOM storm when confirming modules rapidly */
+var _metaTimer=null;
+function deferUpdMeta(){clearTimeout(_metaTimer);_metaTimer=setTimeout(updMeta,150)}
 function updMeta(){
+  clearTimeout(_metaTimer);
   if(!curId)return;
   var ok=mods.filter(function(m){return m.ok}).length,cur=mvpsMeta[curId]||{status:'empty'};
   dbSaveMeta(curId,cur.status==='done'?'done':(mods.length>0?'progress':'empty'),ok);
@@ -936,7 +949,7 @@ function ltConfirm(){
   var val=document.getElementById('ltInp').value.trim().toUpperCase();
   if(!val){notify('Enter the serial number','warn');return}
   var m=getM(ltModId);if(!m){cm('mLT');return}
-  cm('mLT');m.sn=val;m.ok=true;dbSave(m);flashSaved();updMeta();render(ltModId);updBulkBadge();
+  cm('mLT');m.sn=val;m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(ltModId);updBulkBadge();
   notify('N'+m.num+' confirmed: '+val);
 }
 
@@ -976,7 +989,7 @@ async function bkScanAll(){
     var m=todo[i];
     document.getElementById('bkScanSub').textContent='N'+m.num+' ('+(i+1)+'/'+todo.length+')';
     var res=await bkScanOne(m);results.push(res);
-    if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSave(m);flashSaved();updMeta();render(m.id)}
+    if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(m.id)}
     document.getElementById('bkBar').style.width=Math.round((i+1)/todo.length*100)+'%';
     await wait(350);
   }
@@ -1044,19 +1057,19 @@ async function bkRescanOne(id){
   row.style.borderColor='var(--ac)';
   var res=await bkScanOne(m);
   if(rsBtn){rsBtn.textContent='\u21BB RESCAN';rsBtn.disabled=false}
-  if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSave(m);flashSaved();updMeta();render(m.id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 matched');return}
+  if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(m.id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 matched');return}
   var newRow=res.status==='diff'?mkDiffRow(res):res.status==='filled'?mkFillRow(res):mkMissRow(res);
   row.parentNode.replaceChild(newRow,row);
 }
 function bkInpUpd(id,v){var m=getM(id);if(m)m.sn=v.trim().toUpperCase();var b=document.getElementById('bset-'+id);if(b)b.disabled=!v.trim()}
 function bkPick(id,val){
-  var m=getM(id);if(!m)return;m.sn=val.toUpperCase();m.ok=true;dbSave(m);flashSaved();updMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
+  var m=getM(id);if(!m)return;m.sn=val.toUpperCase();m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkConfirm(id){
   var m=getM(id);var inp=document.getElementById('bi-'+id);
   if(inp&&inp.value.trim())m.sn=inp.value.trim().toUpperCase();
   if(!m||!m.sn)return;
-  m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSave(m);flashSaved();updMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
+  m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkRemoveRow(id){
   var row=document.getElementById('br-'+id);if(!row)return;
@@ -1224,31 +1237,43 @@ async function buildZip(){
   var ready=mods.filter(function(m){return m.ok&&m.fblob&&m.lblob});
   var pm=document.getElementById('mProg'),spin=document.getElementById('progSpin'),
       ovt=document.getElementById('progTitle'),ovs=document.getElementById('progSub'),
-      pf=document.getElementById('progFill'),zl=document.getElementById('zipLink'),
+      pfEl=document.getElementById('progFill'),zl=document.getElementById('zipLink'),
       zu=document.getElementById('zipUrl'),cl=document.getElementById('progClose');
   spin.style.display='block';zl.classList.add('hid');cl.classList.add('hid');
-  ovt.textContent='COMPRESSING...';ovs.textContent='';pf.style.width='0%';pm.classList.remove('hid');
+  ovt.textContent='COMPRESSING...';ovs.textContent='';pfEl.style.width='0%';pm.classList.remove('hid');
   var zf=[],tot=ready.length*2,done=0;
   for(var i=0;i<ready.length;i++){
     var m=ready[i],fe=safeExt(m.fnm)||'jpg',le=safeExt(m.lnm)||'jpg';
-    ovs.textContent='N'+m.num+' front...';
+    /* --- front photo --- */
+    ovs.textContent='N'+m.num+' front ('+(i+1)+'/'+ready.length+')...';
+    await wait(20); /* yield so UI updates + iOS can GC */
     var fb=isO?m.fblob:(await compressBlob(m.fblob,comp.maxD,comp.q))||m.fblob;
-    zf.push({name:fName(m.num,m.sn,isO?fe:'jpg'),data:new Uint8Array(await fb.arrayBuffer())});
-    pf.style.width=Math.round(++done/tot*100)+'%';
-    ovs.textContent='N'+m.num+' label...';
+    var fAB=await fb.arrayBuffer();
+    zf.push({name:fName(m.num,m.sn,isO?fe:'jpg'),data:new Uint8Array(fAB)});
+    fb=null;fAB=null; /* release immediately */
+    pfEl.style.width=Math.round(++done/tot*100)+'%';
+    await wait(20);
+    /* --- label photo --- */
+    ovs.textContent='N'+m.num+' label ('+(i+1)+'/'+ready.length+')...';
     var lb=isO?m.lblob:(await compressBlob(m.lblob,comp.maxD,comp.q))||m.lblob;
-    zf.push({name:lName(m.num,m.sn,isO?le:'jpg'),data:new Uint8Array(await lb.arrayBuffer())});
-    pf.style.width=Math.round(++done/tot*100)+'%';
+    var lAB=await lb.arrayBuffer();
+    zf.push({name:lName(m.num,m.sn,isO?le:'jpg'),data:new Uint8Array(lAB)});
+    lb=null;lAB=null;
+    pfEl.style.width=Math.round(++done/tot*100)+'%';
+    await wait(20);
   }
   var csv=['Set Number,Serial Number,Front Photo,Label Photo,Date'],today=new Date().toISOString().split('T')[0];
   for(var i=0;i<ready.length;i++){var m=ready[i],fe2=safeExt(m.fnm)||'jpg',le2=safeExt(m.lnm)||'jpg';csv.push(['N'+m.num,m.sn,fName(m.num,m.sn,fe2),lName(m.num,m.sn,le2),today].join(','))}
   zf.push({name:zn+'_report.csv',data:ENC.encode(csv.join('\r\n'))});
   ovt.textContent='BUILDING ZIP...';ovs.textContent=zf.length+' files';
   await wait(60);
-  var bytes=mkzip(zf),blob=new Blob([bytes],{type:'application/zip'}),href=URL.createObjectURL(blob),fname2=zn+'.zip';
+  var bytes=mkzip(zf);
+  zf=null; /* release file array before creating final blob */
+  var blob=new Blob([bytes],{type:'application/zip'}),href=URL.createObjectURL(blob),fname2=zn+'.zip';
+  bytes=null;
   try{var a=document.createElement('a');a.href=href;a.download=fname2;document.body.appendChild(a);a.click();document.body.removeChild(a)}catch(e){}
   spin.style.display='none';ovt.textContent='ZIP READY';
-  ovs.textContent=ready.length+' module(s) \u00B7 '+Math.round(bytes.length/1024)+'KB \u00B7 '+fname2;
+  ovs.textContent=ready.length+' module(s) \u00B7 '+fname2;
   zu.href=href;zu.download=fname2;zu.textContent='\u{1F4E6} SAVE '+fname2;
   zl.classList.remove('hid');cl.classList.remove('hid');
 }
