@@ -47,7 +47,7 @@ body{background:var(--bg);color:var(--tx);font-family:ui-monospace,'SF Mono',mon
 .sync-bar{background:#070d1a;border:1px solid #152040;border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .sync-lbl strong{display:block;font-size:12px;color:var(--bl);margin-bottom:2px}
 .sync-lbl span{font-size:11px;color:var(--mu)}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
 .stat{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:12px 8px;text-align:center}
 .stn{font-size:22px;font-weight:700;line-height:1;margin-bottom:3px}
 .stl{font-size:9px;color:var(--mu);letter-spacing:.1em}
@@ -220,6 +220,7 @@ canvas{display:none}
       <div class="stat"><div class="stn c-gn" id="sDone">0</div><div class="stl">DONE</div></div>
       <div class="stat"><div class="stn c-ac" id="sProg">0</div><div class="stl">IN PROGRESS</div></div>
       <div class="stat"><div class="stn c-mu" id="sRem">246</div><div class="stl">REMAINING</div></div>
+      <div class="stat"><div class="stn" style="color:var(--bl)" id="sTotalMods">0</div><div class="stl">MODULES</div></div>
     </div>
     <div class="sec">ALL MVPSs — TAP TO OPEN</div>
     <div class="grid" id="mvGrid"></div>
@@ -730,6 +731,7 @@ function buildGrid(){
   document.getElementById('sDone').textContent=done;
   document.getElementById('sProg').textContent=prog;
   document.getElementById('sRem').textContent=TOTAL-done-prog;
+  updTotalMods();
 }
 function updHomeCard(id){
   var m=mvpsMeta[id]||{status:'empty',count:0};
@@ -739,13 +741,36 @@ function updHomeCard(id){
   var done=0,prog=0;
   for(var i=1;i<=TOTAL;i++){var x=mvpsMeta[i]||{};if(x.status==='done')done++;else if(x.status==='progress')prog++}
   document.getElementById('sDone').textContent=done;document.getElementById('sProg').textContent=prog;document.getElementById('sRem').textContent=TOTAL-done-prog;
+  updTotalMods();
+}
+/* Count total modules across all MVPSs from meta */
+function updTotalMods(){
+  var t=0;
+  for(var i=1;i<=TOTAL;i++){var x=mvpsMeta[i];if(x&&x.count)t+=x.count}
+  var el=document.getElementById('sTotalMods');if(el)el.textContent=t;
 }
 
 /* ─────────────────────────────────────────────
    NAVIGATION
 ───────────────────────────────────────────── */
 function showPg(id){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on')});document.getElementById(id).classList.add('on')}
-function goHome(){revokeBlobURLs();curId=null;mods=[];showPg('pgHome')}
+function goHome(){
+  /* Save MVPS status before leaving so grid colors are correct */
+  if(curId){
+    clearTimeout(_metaTimer);
+    var cur=mvpsMeta[curId]||{status:'empty'};
+    /* If not manually marked done, set progress when modules exist */
+    if(cur.status!=='done'){
+      var ns=mods.length>0?'progress':'empty';
+      dbSaveMeta(curId,ns,mods.length);
+    } else {
+      dbSaveMeta(curId,'done',mods.length);
+    }
+    updHomeCard(curId);
+  }
+  revokeBlobURLs();curId=null;mods=[];showPg('pgHome');
+  updTotalMods();
+}
 
 async function openMvps(id){
   curId=id;
@@ -810,7 +835,7 @@ function toggleDone(){
     var meta=mvpsMeta[curId]||{status:'progress'},ns=meta.status==='done'?'progress':'done';
     if(ns==='done'&&!mods.filter(function(m){return m.ok}).length){notify('No confirmed modules yet','warn');return}
     var ok=mods.filter(function(m){return m.ok}).length;
-    dbSaveMeta(curId,ns,ok);updDoneBtn();updHomeCard(curId);
+    dbSaveMeta(curId,ns,mods.length);updDoneBtn();updHomeCard(curId);
     notify(ns==='done'?'MVPS-'+curId+' marked done':'Marked as in progress');
   }catch(e){console.error('toggleDone',e);notify('Error marking done','warn')}
 }
@@ -901,7 +926,7 @@ function updMeta(){
   clearTimeout(_metaTimer);
   if(!curId)return;
   var ok=mods.filter(function(m){return m.ok}).length,cur=mvpsMeta[curId]||{status:'empty'};
-  dbSaveMeta(curId,cur.status==='done'?'done':(mods.length>0?'progress':'empty'),ok);
+  dbSaveMeta(curId,cur.status==='done'?'done':(mods.length>0?'progress':'empty'),mods.length);
   updHomeCard(curId);updDoneBtn();
 }
 function updBulkBadge(){
