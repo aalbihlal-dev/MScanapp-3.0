@@ -470,6 +470,29 @@ function dbSave(m){
   }catch(e){console.error('dbSave',e)}
 }
 
+/* Lightweight save — only updates text fields without rewriting blobs.
+   Uses cursor.update() so IDB doesn't have to serialize multi-MB blobs again.
+   Use this when only S/N, ok, or synced changed — NOT when photos changed. */
+function dbSaveSN(m){
+  if(!DB||!curId)return;
+  try{
+    var tx=DB.transaction('mods','readwrite'),st=tx.objectStore('mods');
+    var rq=st.openCursor(IDBKeyRange.only(m.id));
+    rq.onsuccess=function(e){
+      var cursor=e.target.result;
+      if(cursor){
+        var rec=cursor.value;
+        rec.sn=m.sn||'';rec.ok=m.ok||false;
+        rec.synced=m.synced||false;rec.airtableId=m.airtableId||null;
+        cursor.update(rec);
+      } else {
+        /* Record doesn't exist yet — full save */
+        dbSave(m);
+      }
+    };
+  }catch(e){console.error('dbSaveSN',e);dbSave(m)}
+}
+
 function dbDel(id){if(!DB)return;try{DB.transaction('mods','readwrite').objectStore('mods').delete(id)}catch(e){}}
 
 function dbLoadMods(mvid){
@@ -693,7 +716,9 @@ async function aiScan(blob){
   var key=getANK();
   if(!key)throw new Error('AI locked \u2014 enter password in \u2699 Settings');
   if(!navigator.onLine)throw new Error('Offline \u2014 AI unavailable');
-  var ab=await blob.arrayBuffer();
+  /* Compress to ~1024px before base64 — AI only needs to read text, not 4K pixels */
+  var small=await compressBlob(blob,1024,.80)||blob;
+  var ab=await small.arrayBuffer();small=null;
   var bytes=new Uint8Array(ab);ab=null;
   var bin='',ch=8192;
   for(var i=0;i<bytes.length;i+=ch)bin+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+ch,bytes.length)));
@@ -922,9 +947,9 @@ function buildCard(m){
 
 function render(id){var m=getM(id);if(!m)return;var ex=document.getElementById('C'+id);if(ex)ex.outerHTML=buildCard(m);recount()}
 function updSN(id,v){var m=getM(id);if(m)m.sn=v.trim().toUpperCase();var b=document.getElementById('bs'+id);if(b)b.disabled=!v.trim()}
-function setMod(id){var m=getM(id);if(!m||!m.sn)return;m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();notify('N'+m.num+' confirmed: '+m.sn)}
+function setMod(id){var m=getM(id);if(!m||!m.sn)return;m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();notify('N'+m.num+' confirmed: '+m.sn)}
 function startEdit(id){var m=getM(id);if(m)m.editing=true;render(id);setTimeout(function(){var e=document.getElementById('ei'+id);if(e){e.focus();e.select()}},80)}
-function doneEdit(id){var m=getM(id);if(!m)return;var e=document.getElementById('ei'+id);if(e&&e.value.trim())m.sn=e.value.trim().toUpperCase();m.editing=false;dbSave(m);flashSaved();render(id);notify('N'+m.num+' updated: '+m.sn)}
+function doneEdit(id){var m=getM(id);if(!m)return;var e=document.getElementById('ei'+id);if(e&&e.value.trim())m.sn=e.value.trim().toUpperCase();m.editing=false;dbSaveSN(m);flashSaved();render(id);notify('N'+m.num+' updated: '+m.sn)}
 function recount(){var ok=mods.filter(function(m){return m.ok}).length;document.getElementById('mvSub').textContent='MVPS \u00B7 '+ok+'/'+mods.length+' confirmed'}
 /* Debounced updMeta — prevents IDB + DOM storm when confirming modules rapidly */
 var _metaTimer=null;
@@ -981,7 +1006,7 @@ function ltConfirm(){
   var val=document.getElementById('ltInp').value.trim().toUpperCase();
   if(!val){notify('Enter the serial number','warn');return}
   var m=getM(ltModId);if(!m){cm('mLT');return}
-  cm('mLT');m.sn=val;m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(ltModId);updBulkBadge();
+  cm('mLT');m.sn=val;m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(ltModId);updBulkBadge();
   notify('N'+m.num+' confirmed: '+val);
 }
 
@@ -1021,7 +1046,7 @@ async function bkScanAll(){
     var m=todo[i];
     document.getElementById('bkScanSub').textContent='N'+m.num+' ('+(i+1)+'/'+todo.length+')';
     var res=await bkScanOne(m);results.push(res);
-    if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(m.id)}
+    if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(m.id)}
     document.getElementById('bkBar').style.width=Math.round((i+1)/todo.length*100)+'%';
     await wait(350);
   }
@@ -1089,19 +1114,19 @@ async function bkRescanOne(id){
   row.style.borderColor='var(--ac)';
   var res=await bkScanOne(m);
   if(rsBtn){rsBtn.textContent='\u21BB RESCAN';rsBtn.disabled=false}
-  if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(m.id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 matched');return}
+  if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(m.id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 matched');return}
   var newRow=res.status==='diff'?mkDiffRow(res):res.status==='filled'?mkFillRow(res):mkMissRow(res);
   row.parentNode.replaceChild(newRow,row);
 }
 function bkInpUpd(id,v){var m=getM(id);if(m)m.sn=v.trim().toUpperCase();var b=document.getElementById('bset-'+id);if(b)b.disabled=!v.trim()}
 function bkPick(id,val){
-  var m=getM(id);if(!m)return;m.sn=val.toUpperCase();m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
+  var m=getM(id);if(!m)return;m.sn=val.toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkConfirm(id){
   var m=getM(id);var inp=document.getElementById('bi-'+id);
   if(inp&&inp.value.trim())m.sn=inp.value.trim().toUpperCase();
   if(!m||!m.sn)return;
-  m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSave(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
+  m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkRemoveRow(id){
   var row=document.getElementById('br-'+id);if(!row)return;
