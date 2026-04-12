@@ -498,9 +498,16 @@ function dbMarkSynced(id,recId){
   if(!DB)return;
   try{
     var tx=DB.transaction('mods','readwrite'),st=tx.objectStore('mods');
-    var rq=st.get(id);
-    rq.onsuccess=function(){var rec=rq.result;if(rec){rec.synced=true;rec.airtableId=recId||null;st.put(rec)}};
-  }catch(e){}
+    var rq=st.openCursor(IDBKeyRange.only(id));
+    rq.onsuccess=function(e){
+      var cursor=e.target.result;
+      if(cursor){
+        var rec=cursor.value;
+        rec.synced=true;rec.airtableId=recId||null;
+        cursor.update(rec);
+      }
+    };
+  }catch(e){console.error('dbMarkSynced',e)}
 }
 
 function dbGetSyncList(force){
@@ -1137,25 +1144,34 @@ async function runSync(force){
   await wait(80);
 
   for(var si=0;si<ids.length;si++){
+    /* Yield before loading record — let GC clean up previous iteration */
+    await wait(100);
+
     var m=await dbGetRecord(ids[si]);
     if(!m)continue;
 
+    /* Extract only what we need, then null the record reference */
+    var mId=m.id,mMvid=m.mvid||'?',mNum=m.num,mSn=m.sn||'?';
+    var mFblob=m.fblob||(m.furl?dataURLtoBlob(m.furl):null);
+    var mLblob=m.lblob||(m.lurl?dataURLtoBlob(m.lurl):null);
+    m=null; /* Release the full IDB record immediately */
+
     var processed=si+1;
-    sub.textContent='('+processed+'/'+ids.length+') MVPS-'+(m.mvid||'?')+' N'+m.num+'...';
+    sub.textContent='('+processed+'/'+ids.length+') MVPS-'+mMvid+' N'+mNum+'...';
     pf.style.width=Math.round((processed-1)/ids.length*100)+'%';
 
     var r=document.createElement('div');r.className='sy-row';
-    r.innerHTML='<span class="sy-t">MVPS-'+(m.mvid||'?')+' \u00B7 N'+m.num+' \u00B7 '+(m.sn||'?')+'</span>'
-      +'<span class="sy-s ss-act" id="ss-'+m.id+'">SAVING...</span>';
+    r.innerHTML='<span class="sy-t">MVPS-'+mMvid+' \u00B7 N'+mNum+' \u00B7 '+mSn+'</span>'
+      +'<span class="sy-s ss-act" id="ss-'+mId+'">SAVING...</span>';
     rows.appendChild(r);
     rows.scrollTop=rows.scrollHeight;
-    var badge=document.getElementById('ss-'+m.id);
+    var badge=document.getElementById('ss-'+mId);
 
     try{
       var recId=await atCreate({
-        'Serial Number':m.sn,
-        'MVPS':'MVPS-'+(m.mvid||''),
-        'Set Number':m.num,
+        'Serial Number':mSn,
+        'MVPS':'MVPS-'+mMvid,
+        'Set Number':mNum,
         'Status':'Confirmed',
         'Date':today,
         'Synced By':AT_NAME
@@ -1163,28 +1179,30 @@ async function runSync(force){
 
       var fu=null,lu=null;
       try{
-        var fb=m.fblob||(m.furl?dataURLtoBlob(m.furl):null);
-        var lb=m.lblob||(m.lurl?dataURLtoBlob(m.lurl):null);
-        if(fb){
+        if(mFblob){
           if(badge)badge.textContent='FRONT...';
-          var fc=await compressBlob(fb,1920,.82)||fb;
-          fu=await uploadBlob(fc,fName(m.num,m.sn,'jpg'));
-          fc=null;fb=null;await wait(400);
+          var fc=await compressBlob(mFblob,1920,.82)||mFblob;
+          mFblob=null; /* Release original blob */
+          fu=await uploadBlob(fc,fName(mNum,mSn,'jpg'));
+          fc=null;
+          await wait(300);
         }
-        if(lb){
+        if(mLblob){
           if(badge)badge.textContent='LABEL...';
-          var lc=await compressBlob(lb,1920,.82)||lb;
-          lu=await uploadBlob(lc,lName(m.num,m.sn,'jpg'));
-          lc=null;lb=null;await wait(400);
+          var lc=await compressBlob(mLblob,1920,.82)||mLblob;
+          mLblob=null; /* Release original blob */
+          lu=await uploadBlob(lc,lName(mNum,mSn,'jpg'));
+          lc=null;
+          await wait(300);
         }
         var pf2={};
-        if(fu)pf2['Front Photo']=[{url:fu,filename:fName(m.num,m.sn,'jpg')}];
-        if(lu)pf2['Label Photo']=[{url:lu,filename:lName(m.num,m.sn,'jpg')}];
+        if(fu)pf2['Front Photo']=[{url:fu,filename:fName(mNum,mSn,'jpg')}];
+        if(lu)pf2['Label Photo']=[{url:lu,filename:lName(mNum,mSn,'jpg')}];
         if(fu||lu)await atPatch(recId,pf2);
-      }catch(pe){console.warn('Photos N'+m.num,pe.message)}
+      }catch(pe){console.warn('Photos N'+mNum,pe.message)}
 
       if(badge){badge.className='sy-s ss-ok';badge.textContent='DONE'}
-      dbMarkSynced(m.id,recId);done++;
+      dbMarkSynced(mId,recId);done++;
 
     }catch(e){
       errs++;
@@ -1192,9 +1210,11 @@ async function runSync(force){
       var ed=document.createElement('div');
       ed.style.cssText='font-size:10px;color:var(--rd);margin-top:3px;word-break:break-all';
       ed.textContent=e.message;r.appendChild(ed);
-      console.error('Sync N'+m.num,e);
+      console.error('Sync N'+mNum,e);
     }
-    await wait(500);
+    /* Release any remaining refs */
+    mFblob=null;mLblob=null;
+    await wait(200);
   }
 
   sub.textContent=done+' uploaded'+(errs?' \u00B7 '+errs+' failed':'');
