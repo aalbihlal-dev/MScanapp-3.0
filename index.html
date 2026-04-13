@@ -452,29 +452,14 @@ function openDB(){
 function dbSave(m){
   if(!DB||!curId)return;
   try{
-    var tx=DB.transaction('mods','readwrite');
-    tx.objectStore('mods').put({
+    DB.transaction('mods','readwrite').objectStore('mods').put({
       id:m.id,mvid:curId,num:m.num,sn:m.sn||'',ok:m.ok||false,
-      fblob:m.fblob||null,lblob:m.lblob||null,
+      fblob:m.fblob||null,  /* Blob stored natively in IDB */
+      lblob:m.lblob||null,
       fnm:m.fnm||null,lnm:m.lnm||null,
       synced:m.synced||false,airtableId:m.airtableId||null
     });
-    tx.onerror=function(){notify('Save failed \u2014 storage full?','warn')};
-  }catch(e){console.error('dbSave',e);notify('Save error','warn')}
-}
-
-function dbSaveSN(m){
-  if(!DB||!curId)return;
-  try{
-    var tx=DB.transaction('mods','readwrite'),st=tx.objectStore('mods');
-    var rq=st.openCursor(IDBKeyRange.only(m.id));
-    rq.onsuccess=function(e){
-      var cursor=e.target.result;
-      if(cursor){var rec=cursor.value;rec.sn=m.sn||'';rec.ok=m.ok||false;rec.synced=m.synced||false;rec.airtableId=m.airtableId||null;cursor.update(rec)}
-      else{dbSave(m)}
-    };
-    tx.onerror=function(){notify('Save failed \u2014 storage full?','warn')};
-  }catch(e){console.error('dbSaveSN',e);dbSave(m)}
+  }catch(e){console.error('dbSave',e)}
 }
 
 function dbDel(id){if(!DB)return;try{DB.transaction('mods','readwrite').objectStore('mods').delete(id)}catch(e){}}
@@ -635,22 +620,15 @@ async function aiScan(blob){
   var bin='',ch=8192;
   for(var i=0;i<bytes.length;i+=ch)bin+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+ch,bytes.length)));
   var b64=btoa(bin);bytes=null;bin=null;
-  var body=JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:60,messages:[{role:'user',content:[
-    {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-    {type:'text',text:'Solar PV module label. Serial number is directly below the barcode (~22 chars, e.g. E2FXB523M061202341217804). Return ONLY the serial number. If not readable reply NOT_FOUND.'}
-  ]}]});
+  var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:60,messages:[{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+      {type:'text',text:'Solar PV module label. Serial number is directly below the barcode (~22 chars, e.g. E2FXB523M061202341217804). Return ONLY the serial number. If not readable reply NOT_FOUND.'}
+    ]}]})
+  });
   b64=null;
-  var ctrl=new AbortController();
-  var timer=setTimeout(function(){ctrl.abort()},60000);
-  var resp;
-  try{
-    resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',signal:ctrl.signal,
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:body
-    });
-  }catch(e){clearTimeout(timer);body=null;if(e.name==='AbortError')throw new Error('AI timed out (60s)');throw e}
-  clearTimeout(timer);body=null;
   var data=await resp.json();
   if(!resp.ok){var msg=(data.error&&(data.error.message||data.error.type))||JSON.stringify(data.error||data);throw new Error('Claude API: '+msg+' (HTTP '+resp.status+')')}
   var txt=(data.content||[]).map(function(b){return b.text||''}).join('').trim().toUpperCase();
@@ -696,10 +674,7 @@ function updHomeCard(id){
    NAVIGATION
 ───────────────────────────────────────────── */
 function showPg(id){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on')});document.getElementById(id).classList.add('on')}
-function goHome(){
-  if(curId){var cur=mvpsMeta[curId]||{status:'empty'};if(cur.status!=='done')dbSaveMeta(curId,mods.length>0?'progress':'empty',mods.length);updHomeCard(curId)}
-  revokeBlobURLs();curId=null;mods=[];showPg('pgHome');
-}
+function goHome(){revokeBlobURLs();curId=null;mods=[];showPg('pgHome')}
 
 async function openMvps(id){
   curId=id;
@@ -830,9 +805,9 @@ function buildCard(m){
 
 function render(id){var m=getM(id);if(!m)return;var ex=document.getElementById('C'+id);if(ex)ex.outerHTML=buildCard(m);recount()}
 function updSN(id,v){var m=getM(id);if(m)m.sn=v.trim().toUpperCase();var b=document.getElementById('bs'+id);if(b)b.disabled=!v.trim()}
-function setMod(id){var m=getM(id);if(!m||!m.sn)return;m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(id);updBulkBadge();notify('N'+m.num+' confirmed: '+m.sn)}
+function setMod(id){var m=getM(id);if(!m||!m.sn)return;m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSave(m);flashSaved();updMeta();render(id);updBulkBadge();notify('N'+m.num+' confirmed: '+m.sn)}
 function startEdit(id){var m=getM(id);if(m)m.editing=true;render(id);setTimeout(function(){var e=document.getElementById('ei'+id);if(e){e.focus();e.select()}},80)}
-function doneEdit(id){var m=getM(id);if(!m)return;var e=document.getElementById('ei'+id);if(e&&e.value.trim())m.sn=e.value.trim().toUpperCase();m.editing=false;dbSaveSN(m);flashSaved();render(id);notify('N'+m.num+' updated: '+m.sn)}
+function doneEdit(id){var m=getM(id);if(!m)return;var e=document.getElementById('ei'+id);if(e&&e.value.trim())m.sn=e.value.trim().toUpperCase();m.editing=false;dbSave(m);flashSaved();render(id);notify('N'+m.num+' updated: '+m.sn)}
 function recount(){var ok=mods.filter(function(m){return m.ok}).length;document.getElementById('mvSub').textContent='MVPS \u00B7 '+ok+'/'+mods.length+' confirmed'}
 function updMeta(){
   if(!curId)return;
@@ -885,7 +860,7 @@ function ltConfirm(){
   var val=document.getElementById('ltInp').value.trim().toUpperCase();
   if(!val){notify('Enter the serial number','warn');return}
   var m=getM(ltModId);if(!m){cm('mLT');return}
-  cm('mLT');m.sn=val;m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(ltModId);updBulkBadge();
+  cm('mLT');m.sn=val;m.ok=true;dbSave(m);flashSaved();updMeta();render(ltModId);updBulkBadge();
   notify('N'+m.num+' confirmed: '+val);
 }
 
@@ -925,7 +900,7 @@ async function bkScanAll(){
     var m=todo[i];
     document.getElementById('bkScanSub').textContent='N'+m.num+' ('+(i+1)+'/'+todo.length+')';
     var res=await bkScanOne(m);results.push(res);
-    if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(m.id)}
+    if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSave(m);flashSaved();updMeta();render(m.id)}
     document.getElementById('bkBar').style.width=Math.round((i+1)/todo.length*100)+'%';
     await wait(350);
   }
@@ -993,20 +968,19 @@ async function bkRescanOne(id){
   row.style.borderColor='var(--ac)';
   var res=await bkScanOne(m);
   if(rsBtn){rsBtn.textContent='\u8635 RESCAN';rsBtn.disabled=false}
-  if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(m.id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 matched');return}
+  if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSave(m);flashSaved();updMeta();render(m.id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 matched');return}
   var newRow=res.status==='diff'?mkDiffRow(res):res.status==='filled'?mkFillRow(res):mkMissRow(res);
   row.parentNode.replaceChild(newRow,row);
 }
 function bkInpUpd(id,v){var m=getM(id);if(m)m.sn=v.trim().toUpperCase();var b=document.getElementById('bset-'+id);if(b)b.disabled=!v.trim()}
 function bkPick(id,val){
-  var m=getM(id);if(!m)return;m.sn=val.toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
+  var m=getM(id);if(!m)return;m.sn=val.toUpperCase();m.ok=true;dbSave(m);flashSaved();updMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkConfirm(id){
-  var m=getM(id);if(!m)return;
-  var inp=document.getElementById('bi-'+id);
+  var m=getM(id);var inp=document.getElementById('bi-'+id);
   if(inp&&inp.value.trim())m.sn=inp.value.trim().toUpperCase();
-  if(!m.sn)return;
-  m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
+  if(!m||!m.sn)return;
+  m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSave(m);flashSaved();updMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkRemoveRow(id){
   var row=document.getElementById('br-'+id);if(!row)return;
