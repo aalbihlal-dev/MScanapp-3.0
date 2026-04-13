@@ -429,6 +429,7 @@ var AT_UNLOCKED=localStorage.getItem('at_unlocked')==='1';
 var ltModId=null;
 var blobURLs={};
 var _rotating=false;
+var _metaTimer=null;
 
 /* ─────────────────────────────────────────────
    OFFLINE BANNER
@@ -461,13 +462,16 @@ function openDB(){
 function dbSave(m){
   if(!DB||!curId)return;
   try{
-    DB.transaction('mods','readwrite').objectStore('mods').put({
+    var tx=DB.transaction('mods','readwrite');
+    tx.objectStore('mods').put({
       id:m.id,mvid:curId,num:m.num,sn:m.sn||'',ok:m.ok||false,
       fblob:m.fblob||null,lblob:m.lblob||null,
       fnm:m.fnm||null,lnm:m.lnm||null,
       synced:m.synced||false,airtableId:m.airtableId||null
     });
-  }catch(e){console.error('dbSave',e)}
+    tx.onerror=function(){notify('Save failed \u2014 storage full?','warn')};
+    tx.onabort=function(){notify('Save failed \u2014 storage full?','warn')};
+  }catch(e){console.error('dbSave',e);notify('Save error','warn')}
 }
 
 /* Lightweight save — only updates text fields without rewriting blobs.
@@ -490,6 +494,8 @@ function dbSaveSN(m){
         dbSave(m);
       }
     };
+    tx.onerror=function(){notify('Save failed \u2014 storage full?','warn')};
+    tx.onabort=function(){notify('Save failed \u2014 storage full?','warn')};
   }catch(e){console.error('dbSaveSN',e);dbSave(m)}
 }
 
@@ -581,6 +587,7 @@ function dataURLtoBlob(dataURL){
   }catch(e){return null}
 }
 function safeExt(fname){try{return(fname?fname.split('.').pop():'')||'jpg'}catch(e){return'jpg'}}
+function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'):''}
 function getComp(){var v=(document.getElementById('compSel')||{}).value||'medium';if(v==='high')return{maxD:3000,q:.92};if(v==='medium')return{maxD:2048,q:.82};if(v==='low')return{maxD:1280,q:.70};return{maxD:9999,q:1}}
 
 function blobURL(blob,id,side){
@@ -705,8 +712,16 @@ function mkzip(files){
   var cds=[],cdo=off,cds_=0;
   for(var i=0;i<locs.length;i++){var f=locs[i];var cd=cat(SC,u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(f.crc),u32(f.sz),u32(f.sz),u16(f.nm.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(f.off),f.nm);cds.push(cd);cds_+=cd.length}
   var eocd=cat(SE,u16(0),u16(0),u16(locs.length),u16(locs.length),u32(cds_),u32(cdo),u16(0));
-  var p=[];for(var i=0;i<locs.length;i++){p.push(locs[i].lh);p.push(locs[i].data)}for(var i=0;i<cds.length;i++)p.push(cds[i]);p.push(eocd);
-  return cat.apply(null,p);
+  /* Calculate total size, then write sequentially — no .apply call stack risk */
+  var total=0;
+  for(var i=0;i<locs.length;i++)total+=locs[i].lh.length+locs[i].data.length;
+  for(var i=0;i<cds.length;i++)total+=cds[i].length;
+  total+=eocd.length;
+  var out=new Uint8Array(total),pos=0;
+  for(var i=0;i<locs.length;i++){out.set(locs[i].lh,pos);pos+=locs[i].lh.length;out.set(locs[i].data,pos);pos+=locs[i].data.length}
+  for(var i=0;i<cds.length;i++){out.set(cds[i],pos);pos+=cds[i].length}
+  out.set(eocd,pos);
+  return out;
 }
 
 /* ─────────────────────────────────────────────
@@ -716,22 +731,41 @@ async function aiScan(blob){
   var key=getANK();
   if(!key)throw new Error('AI locked \u2014 enter password in \u2699 Settings');
   if(!navigator.onLine)throw new Error('Offline \u2014 AI unavailable');
-  /* Compress to ~1024px before base64 — AI only needs to read text, not 4K pixels */
-  var small=await compressBlob(blob,1024,.80)||blob;
+  /* Compress with 5s safety timeout — if toBlob hangs, fall back to original */
+  var small;
+  try{
+    small=await Promise.race([
+      compressBlob(blob,1024,.80),
+      new Promise(function(_,rej){setTimeout(function(){rej(new Error('compress timeout'))},5000)})
+    ]);
+  }catch(e){small=null}
+  if(!small)small=blob;
   var ab=await small.arrayBuffer();small=null;
   var bytes=new Uint8Array(ab);ab=null;
   var bin='',ch=8192;
   for(var i=0;i<bytes.length;i+=ch)bin+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+ch,bytes.length)));
   var b64=btoa(bin);bytes=null;bin=null;
-  var resp=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:60,messages:[{role:'user',content:[
-      {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-      {type:'text',text:'Solar PV module label. Serial number is directly below the barcode (~22 chars, e.g. E2FXB523M061202341217804). Return ONLY the serial number. If not readable reply NOT_FOUND.'}
-    ]}]})
-  });
+  /* Build body string then release b64 BEFORE fetch starts */
+  var body=JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:60,messages:[{role:'user',content:[
+    {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+    {type:'text',text:'Solar PV module label. Serial number is directly below the barcode (~22 chars, e.g. E2FXB523M061202341217804). Return ONLY the serial number. If not readable reply NOT_FOUND.'}
+  ]}]});
   b64=null;
+  var ctrl=new AbortController();
+  var timer=setTimeout(function(){ctrl.abort()},60000);
+  var resp;
+  try{
+    resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',signal:ctrl.signal,
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:body
+    });
+  }catch(e){
+    clearTimeout(timer);body=null;
+    if(e.name==='AbortError')throw new Error('AI timed out (60s) \u2014 weak signal?');
+    throw e;
+  }
+  clearTimeout(timer);body=null;
   var data=await resp.json();
   if(!resp.ok){var msg=(data.error&&(data.error.message||data.error.type))||JSON.stringify(data.error||data);throw new Error('Claude API: '+msg+' (HTTP '+resp.status+')')}
   var txt=(data.content||[]).map(function(b){return b.text||''}).join('').trim().toUpperCase();
@@ -912,8 +946,8 @@ function buildCard(m){
   var lurl=s2?blobURL(m.lblob,m.id,'l'):null;
 
   var snTxt=dn?(m.editing
-    ?'<input type="text" id="ei'+m.id+'" value="'+m.sn+'" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" style="background:var(--s2);border:1px solid var(--ac);border-radius:5px;color:#fff;font-family:inherit;font-size:13px;font-weight:700;padding:2px 8px;outline:none;width:130px;letter-spacing:.04em" oninput="getM(\''+m.id+'\').sn=this.value.trim().toUpperCase()" onkeydown="if(event.key===\'Enter\')doneEdit(\''+m.id+'\')">'
-    :'<span class="csn">'+m.sn+'</span>')
+    ?'<input type="text" id="ei'+m.id+'" value="'+esc(m.sn)+'" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" style="background:var(--s2);border:1px solid var(--ac);border-radius:5px;color:#fff;font-family:inherit;font-size:13px;font-weight:700;padding:2px 8px;outline:none;width:130px;letter-spacing:.04em" oninput="getM(\''+m.id+'\').sn=this.value.trim().toUpperCase()" onkeydown="if(event.key===\'Enter\')doneEdit(\''+m.id+'\')">'
+    :'<span class="csn">'+esc(m.sn)+'</span>')
     :'<span class="csn csn-dim">'+(s2?'ENTER S/N BELOW':s1?'STEP 2: TAKE LABEL':'STEP 1: TAKE FRONT')+'</span>';
   var eBtn=dn?(m.editing?'<button class="btn b-edit" onclick="doneEdit(\''+m.id+'\')">SAVE</button>':'<button class="btn b-edit" onclick="startEdit(\''+m.id+'\')">EDIT</button>'):'';
   var delBtn='<div class="dh" id="dh'+m.id+'" onmousedown="startHold(\''+m.id+'\',this)" ontouchstart="startHold(\''+m.id+'\',this)" onmouseup="endHold(this)" onmouseleave="endHold(this)" ontouchend="endHold(this)" ontouchcancel="endHold(this)"><div class="dhf"></div><span style="position:relative;z-index:1;color:var(--mu)">&#128465;</span></div>';
@@ -936,7 +970,7 @@ function buildCard(m){
   var ln=dn?'<div class="pnm rdy">'+lName(m.num,m.sn,le)+'</div>':'<div class="pnm dim">'+(s2?'tap photo to read':'not taken')+'</div>';
 
   var ltRow=(!dn&&s2)?'<div class="lt-row"><button class="btn b-lt" onclick="openLT(\''+m.id+'\')">&#128269; LIVE TEXT \u2014 TAP TO READ SERIAL NUMBER</button></div>':'';
-  var iRow=(!dn&&s1&&s2)?'<div class="irow"><label>S/N</label><input type="text" id="si'+m.id+'" value="'+m.sn+'" placeholder="Type or paste here" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" oninput="updSN(\''+m.id+'\',this.value)" onkeydown="if(event.key===\'Enter\')setMod(\''+m.id+'\')"><button class="btn b-set" id="bs'+m.id+'" onclick="setMod(\''+m.id+'\')"'+(m.sn?'':' disabled')+'>SET</button></div>':'';
+  var iRow=(!dn&&s1&&s2)?'<div class="irow"><label>S/N</label><input type="text" id="si'+m.id+'" value="'+esc(m.sn)+'" placeholder="Type or paste here" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" oninput="updSN(\''+m.id+'\',this.value)" onkeydown="if(event.key===\'Enter\')setMod(\''+m.id+'\')"><button class="btn b-set" id="bs'+m.id+'" onclick="setMod(\''+m.id+'\')"'+(m.sn?'':' disabled')+'>SET</button></div>':'';
 
   return '<div class="card" id="C'+m.id+'">'+
     '<div class="ch"><div class="chl"><span class="nb">N'+m.num+'</span>'+snTxt+'</div><div class="chr">'+eBtn+delBtn+'</div></div>'+
@@ -952,12 +986,11 @@ function startEdit(id){var m=getM(id);if(m)m.editing=true;render(id);setTimeout(
 function doneEdit(id){var m=getM(id);if(!m)return;var e=document.getElementById('ei'+id);if(e&&e.value.trim())m.sn=e.value.trim().toUpperCase();m.editing=false;dbSaveSN(m);flashSaved();render(id);notify('N'+m.num+' updated: '+m.sn)}
 function recount(){var ok=mods.filter(function(m){return m.ok}).length;document.getElementById('mvSub').textContent='MVPS \u00B7 '+ok+'/'+mods.length+' confirmed'}
 /* Debounced updMeta — prevents IDB + DOM storm when confirming modules rapidly */
-var _metaTimer=null;
 function deferUpdMeta(){clearTimeout(_metaTimer);_metaTimer=setTimeout(updMeta,150)}
 function updMeta(){
   clearTimeout(_metaTimer);
   if(!curId)return;
-  var ok=mods.filter(function(m){return m.ok}).length,cur=mvpsMeta[curId]||{status:'empty'};
+  var cur=mvpsMeta[curId]||{status:'empty'};
   dbSaveMeta(curId,cur.status==='done'?'done':(mods.length>0?'progress':'empty'),mods.length);
   updHomeCard(curId);updDoneBtn();
 }
@@ -1123,9 +1156,10 @@ function bkPick(id,val){
   var m=getM(id);if(!m)return;m.sn=val.toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkConfirm(id){
-  var m=getM(id);var inp=document.getElementById('bi-'+id);
+  var m=getM(id);if(!m)return;
+  var inp=document.getElementById('bi-'+id);
   if(inp&&inp.value.trim())m.sn=inp.value.trim().toUpperCase();
-  if(!m||!m.sn)return;
+  if(!m.sn)return;
   m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkRemoveRow(id){
@@ -1253,7 +1287,12 @@ async function uploadBlob(blob,fname){
   form.append('file',blob,fname);
   form.append('upload_preset',CLD_PRESET);
   form.append('public_id',fname.replace(/\.jpg$/,''));
-  var r=await fetch('https://api.cloudinary.com/v1_1/'+CLD_CLOUD+'/image/upload',{method:'POST',body:form});
+  var ctrl=new AbortController();
+  var timer=setTimeout(function(){ctrl.abort()},30000);
+  var r;
+  try{r=await fetch('https://api.cloudinary.com/v1_1/'+CLD_CLOUD+'/image/upload',{method:'POST',body:form,signal:ctrl.signal})}
+  catch(e){clearTimeout(timer);if(e.name==='AbortError')throw new Error('Upload timed out');throw e}
+  clearTimeout(timer);
   if(!r.ok)throw new Error('Cloudinary HTTP '+r.status);
   var d=await r.json();
   if(d.error)throw new Error('Cloudinary: '+d.error.message);
@@ -1261,17 +1300,25 @@ async function uploadBlob(blob,fname){
 }
 
 async function atCreate(fields){
-  var r=await fetch('https://api.airtable.com/v0/'+AT_BASE+'/Modules',{method:'POST',
+  var ctrl=new AbortController();var timer=setTimeout(function(){ctrl.abort()},20000);
+  var r;
+  try{r=await fetch('https://api.airtable.com/v0/'+AT_BASE+'/Modules',{method:'POST',signal:ctrl.signal,
     headers:{'Authorization':'Bearer '+getATK(),'Content-Type':'application/json'},
-    body:JSON.stringify({fields:fields})});
+    body:JSON.stringify({fields:fields})})}
+  catch(e){clearTimeout(timer);if(e.name==='AbortError')throw new Error('Airtable timed out');throw e}
+  clearTimeout(timer);
   var d=await r.json();
   if(!r.ok||d.error)throw new Error((d.error&&(d.error.message||JSON.stringify(d.error)))||'HTTP '+r.status);
   return d.id;
 }
 async function atPatch(recId,fields){
-  var r=await fetch('https://api.airtable.com/v0/'+AT_BASE+'/Modules/'+recId,{method:'PATCH',
+  var ctrl=new AbortController();var timer=setTimeout(function(){ctrl.abort()},20000);
+  var r;
+  try{r=await fetch('https://api.airtable.com/v0/'+AT_BASE+'/Modules/'+recId,{method:'PATCH',signal:ctrl.signal,
     headers:{'Authorization':'Bearer '+getATK(),'Content-Type':'application/json'},
-    body:JSON.stringify({fields:fields})});
+    body:JSON.stringify({fields:fields})})}
+  catch(e){clearTimeout(timer);if(e.name==='AbortError')throw new Error('Airtable timed out');throw e}
+  clearTimeout(timer);
   var d=await r.json();
   if(!r.ok||d.error)throw new Error((d.error&&(d.error.message||JSON.stringify(d.error)))||'HTTP '+r.status);
 }
