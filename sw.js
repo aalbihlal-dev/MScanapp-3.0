@@ -1,22 +1,67 @@
-var CACHE='module-scanner-v21';
-var URLS=['/','/index.html'];
-self.addEventListener('install',function(e){e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(URLS)}));self.skipWaiting()});
-self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k!==CACHE}).map(function(k){return caches.delete(k)}))}));self.clients.claim()});
-self.addEventListener('fetch',function(e){
-  if(e.request.method!=='GET')return;
-  var u=new URL(e.request.url);
-  if(u.origin!==location.origin)return;
-  /* Network-first for HTML — ensures app updates always pull through.
-     Falls back to cache when offline (the whole point of the SW). */
-  if(e.request.mode==='navigate'||u.pathname==='/'||u.pathname==='/index.html'){
+const CACHE = 'module-scanner-v22';
+const ASSETS = ['/', '/index.html'];
+
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open(CACHE).then(function(cache) {
+      return cache.addAll(ASSETS);
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function(e) {
+  e.waitUntil(
+    caches.keys().then(function(keys) {
+      return Promise.all(
+        keys.filter(function(k) { return k !== CACHE; })
+            .map(function(k) { return caches.delete(k); })
+      );
+    }).then(function() {
+      return self.clients.claim();
+    })
+  );
+});
+
+// ONLY intercept GET — never touch POST/API calls
+self.addEventListener('fetch', function(e) {
+  var url = e.request.url;
+
+  if (e.request.method !== 'GET') return;
+  if (url.indexOf('api.anthropic.com') !== -1) return;
+  if (url.indexOf('api.airtable.com') !== -1) return;
+  if (url.indexOf('content.airtable.com') !== -1) return;
+  if (url.indexOf('cloudinary.com') !== -1) return;
+
+  // Network-first for index.html — always gets fresh version
+  if (url.indexOf('index.html') !== -1 || e.request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request).then(function(r){
-        if(r.ok){var rc=r.clone();caches.open(CACHE).then(function(c){c.put(e.request,rc)})}
-        return r;
-      }).catch(function(){return caches.match(e.request)})
+      fetch(e.request).then(function(response) {
+        if (response.status === 200) {
+          var clone = response.clone();
+          caches.open(CACHE).then(function(cache) { cache.put(e.request, clone); });
+        }
+        return response;
+      }).catch(function() {
+        return caches.match('/index.html');
+      })
     );
     return;
   }
-  /* Cache-first for other assets */
-  e.respondWith(caches.match(e.request).then(function(r){return r||fetch(e.request)}));
+
+  // Cache-first for everything else
+  e.respondWith(
+    caches.match(e.request).then(function(cached) {
+      if (cached) return cached;
+      return fetch(e.request).then(function(response) {
+        if (response.status === 200) {
+          var clone = response.clone();
+          caches.open(CACHE).then(function(cache) { cache.put(e.request, clone); });
+        }
+        return response;
+      }).catch(function() {
+        return new Response('Offline', { status: 503 });
+      });
+    })
+  );
 });

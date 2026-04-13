@@ -47,15 +47,15 @@ body{background:var(--bg);color:var(--tx);font-family:ui-monospace,'SF Mono',mon
 .sync-bar{background:#070d1a;border:1px solid #152040;border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .sync-lbl strong{display:block;font-size:12px;color:var(--bl);margin-bottom:2px}
 .sync-lbl span{font-size:11px;color:var(--mu)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .stat{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:12px 8px;text-align:center}
 .stn{font-size:22px;font-weight:700;line-height:1;margin-bottom:3px}
 .stl{font-size:9px;color:var(--mu);letter-spacing:.1em}
 .c-gn{color:var(--gn)}.c-ac{color:var(--ac)}.c-mu{color:var(--mu)}
 .sec{font-size:9px;color:var(--mu);letter-spacing:.15em;margin-bottom:8px;padding-left:2px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.gc{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:10px 8px;cursor:pointer;text-align:center;transition:transform .1s,opacity .1s}
-.gc:active{opacity:.6;transform:scale(.97)}
+.gc{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:10px 8px;cursor:pointer;text-align:center}
+.gc:active{opacity:.6}
 .gc.g-done{border-color:#163016;background:#060e06}.gc.g-done .gn{color:var(--gn)}
 .gc.g-prog{border-color:#2e1e00;background:#0e0900}.gc.g-prog .gn{color:var(--ac)}
 .gn{font-size:12px;font-weight:700;letter-spacing:.02em;margin-bottom:2px}
@@ -77,23 +77,19 @@ body{background:var(--bg);color:var(--tx);font-family:ui-monospace,'SF Mono',mon
 .csn{font-size:14px;font-weight:700;color:var(--ac);letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .csn-dim{color:var(--mu);font-size:11px;font-weight:400}
 .pills{display:flex;gap:4px;padding:0 12px 8px}
-.pill{flex:1;height:3px;border-radius:2px;background:var(--mu2);transition:background .3s}
+.pill{flex:1;height:3px;border-radius:2px;background:var(--mu2)}
 .pill.dn{background:var(--gn)}.pill.at{background:var(--ac)}
 .photos{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bd)}
 .pc{background:var(--s1);padding:10px;display:flex;flex-direction:column;align-items:center;gap:7px}
 .plbl{font-size:9px;font-weight:700;letter-spacing:.15em;color:var(--mu);align-self:flex-start}
-.pimg{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid var(--bd);display:block;background:var(--s2);transition:opacity .15s}
-.ph{width:100%;aspect-ratio:4/3;border-radius:6px;border:2px dashed var(--mu2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--mu2);cursor:pointer;background:var(--s2);transition:border-color .15s}
+.pimg{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid var(--bd);display:block;background:var(--s2)}
+.ph{width:100%;aspect-ratio:4/3;border-radius:6px;border:2px dashed var(--mu2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--mu2);cursor:pointer;background:var(--s2)}
 .ph:active{border-color:var(--mu)}.ph.off{opacity:.25;pointer-events:none}
 .ph .ei{font-size:26px}.ph .et{font-size:9px;letter-spacing:.1em}
 .pnm{font-size:9px;word-break:break-all;text-align:center;line-height:1.4}
 .pnm.rdy{color:var(--bl)}.pnm.dim{color:var(--mu2)}
 .retake-btn{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--mu);background:none;border:1px solid var(--mu2);border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit}
 .retake-btn:active{opacity:.6}
-.rotate-btn{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--bl);background:none;border:1px solid #152040;border-radius:4px;padding:3px 8px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:3px}
-.rotate-btn:active{opacity:.6}
-.rotate-btn:disabled{opacity:.3;cursor:default}
-.photo-actions{display:flex;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap}
 .lt-row{padding:8px 12px;border-top:1px solid var(--bd)}
 .irow{padding:8px 12px;border-top:1px solid var(--bd);display:flex;align-items:center;gap:8px}
 .irow label{font-size:10px;color:var(--mu);white-space:nowrap;flex-shrink:0}
@@ -132,10 +128,7 @@ body{background:var(--bg);color:var(--tx);font-family:ui-monospace,'SF Mono',mon
 .lt-wrap{display:flex;flex-direction:column;width:100%;max-width:520px;margin:auto;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;max-height:88dvh}
 .lt-hdr{padding:12px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .lt-tip{padding:8px 14px;background:#150f00;border-bottom:1px solid #2e2000;font-size:11px;color:var(--ac);line-height:1.6;flex-shrink:0}
-.lt-img{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:10px;background:#000;min-height:80px;position:relative}
-.lt-rotate{position:absolute;top:12px;right:12px;background:rgba(14,14,14,.85);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--bl);cursor:pointer;font-family:inherit;letter-spacing:.06em;display:flex;align-items:center;gap:4px;z-index:2;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.lt-rotate:active{opacity:.6}
-.lt-rotate:disabled{opacity:.3}
+.lt-img{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:10px;background:#000;min-height:80px}
 .lt-foot{padding:10px 14px;border-top:1px solid var(--bd);display:flex;gap:8px;align-items:center;flex-shrink:0}
 .lt-foot input{flex:1;min-width:0;background:var(--s2);border:1px solid var(--bd);border-radius:7px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;letter-spacing:.04em;padding:9px 11px;outline:none;-webkit-appearance:none}
 .lt-foot input:focus{border-color:var(--ac)}
@@ -161,7 +154,7 @@ body{background:var(--bg);color:var(--tx);font-family:ui-monospace,'SF Mono',mon
 .sp-miss{background:#180a0a;color:var(--rd);border:1px solid #3a1212}
 .grp-ttl{padding:8px 10px 3px;font-size:9px;font-weight:700;letter-spacing:.15em}
 .g-diff{color:var(--ac)}.g-fill{color:var(--bl)}.g-miss{color:var(--rd)}
-.brow{background:var(--s2);border:2px solid var(--bd);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s,opacity .3s}
+.brow{background:var(--s2);border:2px solid var(--bd);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s}
 .brow-top{display:flex;align-items:flex-start;gap:10px}
 .bthumb{width:54px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--bd);flex-shrink:0;cursor:pointer;background:var(--s2)}
 .b-inp{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:6px;color:#fff;font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.04em;padding:6px 8px;outline:none;-webkit-appearance:none}
@@ -220,7 +213,6 @@ canvas{display:none}
       <div class="stat"><div class="stn c-gn" id="sDone">0</div><div class="stl">DONE</div></div>
       <div class="stat"><div class="stn c-ac" id="sProg">0</div><div class="stl">IN PROGRESS</div></div>
       <div class="stat"><div class="stn c-mu" id="sRem">246</div><div class="stl">REMAINING</div></div>
-      <div class="stat"><div class="stn" style="color:var(--bl)" id="sTotalMods">0</div><div class="stl">MODULES</div></div>
     </div>
     <div class="sec">ALL MVPSs — TAP TO OPEN</div>
     <div class="grid" id="mvGrid"></div>
@@ -264,10 +256,7 @@ canvas{display:none}
       <button class="btn b-sm" style="background:var(--s2);color:var(--mu);border:1px solid var(--bd)" onclick="cm('mLT')">CLOSE</button>
     </div>
     <div class="lt-tip">On iPhone: <strong>long-press the serial number text</strong> in the photo &#8594; tap <strong>Copy</strong> &#8594; paste below. Or type manually.</div>
-    <div class="lt-img">
-      <img id="ltImg" src="" style="max-width:100%;max-height:50dvh;object-fit:contain;border-radius:6px;-webkit-user-select:text;user-select:text">
-      <button class="lt-rotate" id="ltRotateBtn" onclick="rotateLabelInLT()">&#8635; ROTATE</button>
-    </div>
+    <div class="lt-img"><img id="ltImg" src="" style="max-width:100%;max-height:50dvh;object-fit:contain;border-radius:6px;-webkit-user-select:text;user-select:text"></div>
     <div class="lt-foot">
       <input type="text" id="ltInp" placeholder="Paste or type S/N here" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
         oninput="document.getElementById('ltBtn').disabled=!this.value.trim()"
@@ -427,9 +416,8 @@ var DB=null,curId=null,mods=[],mvpsMeta={};
 var AT_NAME=localStorage.getItem('at_name')||'';
 var AT_UNLOCKED=localStorage.getItem('at_unlocked')==='1';
 var ltModId=null;
+/* Object URL cache — maps "id-f" / "id-l" to blob: URLs for display */
 var blobURLs={};
-var _rotating=false;
-var _metaTimer=null;
 
 /* ─────────────────────────────────────────────
    OFFLINE BANNER
@@ -441,6 +429,8 @@ updOffline();
 
 /* ─────────────────────────────────────────────
    INDEXEDDB — mscanner5
+   Photos stored as Blobs (never as data URLs).
+   Blobs live outside the JS heap — no memory spike.
 ───────────────────────────────────────────── */
 function openDB(){
   return new Promise(function(ok,err){
@@ -470,13 +460,9 @@ function dbSave(m){
       synced:m.synced||false,airtableId:m.airtableId||null
     });
     tx.onerror=function(){notify('Save failed \u2014 storage full?','warn')};
-    tx.onabort=function(){notify('Save failed \u2014 storage full?','warn')};
   }catch(e){console.error('dbSave',e);notify('Save error','warn')}
 }
 
-/* Lightweight save — only updates text fields without rewriting blobs.
-   Uses cursor.update() so IDB doesn't have to serialize multi-MB blobs again.
-   Use this when only S/N, ok, or synced changed — NOT when photos changed. */
 function dbSaveSN(m){
   if(!DB||!curId)return;
   try{
@@ -484,18 +470,10 @@ function dbSaveSN(m){
     var rq=st.openCursor(IDBKeyRange.only(m.id));
     rq.onsuccess=function(e){
       var cursor=e.target.result;
-      if(cursor){
-        var rec=cursor.value;
-        rec.sn=m.sn||'';rec.ok=m.ok||false;
-        rec.synced=m.synced||false;rec.airtableId=m.airtableId||null;
-        cursor.update(rec);
-      } else {
-        /* Record doesn't exist yet — full save */
-        dbSave(m);
-      }
+      if(cursor){var rec=cursor.value;rec.sn=m.sn||'';rec.ok=m.ok||false;rec.synced=m.synced||false;rec.airtableId=m.airtableId||null;cursor.update(rec)}
+      else{dbSave(m)}
     };
     tx.onerror=function(){notify('Save failed \u2014 storage full?','warn')};
-    tx.onabort=function(){notify('Save failed \u2014 storage full?','warn')};
   }catch(e){console.error('dbSaveSN',e);dbSave(m)}
 }
 
@@ -527,28 +505,33 @@ function dbMarkSynced(id,recId){
   if(!DB)return;
   try{
     var tx=DB.transaction('mods','readwrite'),st=tx.objectStore('mods');
-    var rq=st.openCursor(IDBKeyRange.only(id));
-    rq.onsuccess=function(e){
-      var cursor=e.target.result;
-      if(cursor){
-        var rec=cursor.value;
-        rec.synced=true;rec.airtableId=recId||null;
-        cursor.update(rec);
-      }
-    };
-  }catch(e){console.error('dbMarkSynced',e)}
+    var rq=st.get(id);
+    rq.onsuccess=function(){var rec=rq.result;if(rec){rec.synced=true;rec.airtableId=recId||null;st.put(rec)}};
+  }catch(e){}
 }
 
+/*
+  dbGetSyncList + dbGetRecord — two-step sync approach.
+  onRecord receives the raw IDB record (with Blob fields).
+  The Blob is handed directly to FormData — never decoded into JS memory.
+*/
+/*
+  dbGetSyncList — loads only lightweight fields (no blobs) to get IDs.
+  Then dbGetRecord loads one full record at a time outside the transaction.
+  This avoids the iOS Safari issue where async callbacks close the IDB transaction.
+*/
 function dbGetSyncList(force){
   return new Promise(function(ok){
     if(!DB){ok([]);return}
     try{
+      /* Open cursor but only collect IDs — no async work inside */
       var ids=[];
       var req=DB.transaction('mods','readonly').objectStore('mods').openCursor();
       req.onsuccess=function(e){
         var cursor=e.target.result;
         if(!cursor){ok(ids);return}
         var m=cursor.value;
+        /* Check eligibility using lightweight fields only */
         var hasPhoto=!!(m.fblob||m.lblob||m.furl||m.lurl);
         if(m.ok&&hasPhoto&&(force||!m.synced)) ids.push(m.id);
         cursor.continue();
@@ -576,6 +559,7 @@ function flashSaved(){var e=document.getElementById('saveInd');e.classList.add('
 ───────────────────────────────────────────── */
 function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
 
+/* Convert legacy data URL to Blob — done once on load, not during sync */
 function dataURLtoBlob(dataURL){
   if(!dataURL)return null;
   try{
@@ -587,9 +571,9 @@ function dataURLtoBlob(dataURL){
   }catch(e){return null}
 }
 function safeExt(fname){try{return(fname?fname.split('.').pop():'')||'jpg'}catch(e){return'jpg'}}
-function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'):''}
 function getComp(){var v=(document.getElementById('compSel')||{}).value||'medium';if(v==='high')return{maxD:3000,q:.92};if(v==='medium')return{maxD:2048,q:.82};if(v==='low')return{maxD:1280,q:.70};return{maxD:9999,q:1}}
 
+/* Get or create an object URL for a Blob — lightweight, revoked on page leave */
 function blobURL(blob,id,side){
   var key=id+'-'+side;
   if(!blobURLs[key]&&blob)blobURLs[key]=URL.createObjectURL(blob);
@@ -599,11 +583,8 @@ function revokeBlobURLs(){
   Object.keys(blobURLs).forEach(function(k){try{URL.revokeObjectURL(blobURLs[k])}catch(e){}});
   blobURLs={};
 }
-function revokeSingleBlob(id,side){
-  var key=id+'-'+side;
-  if(blobURLs[key]){try{URL.revokeObjectURL(blobURLs[key])}catch(e){}delete blobURLs[key]}
-}
 
+/* Compress a Blob for ZIP export — only called during ZIP, not during sync */
 function compressBlob(blob,maxD,q){
   return new Promise(function(ok){
     if(!blob){ok(null);return}
@@ -614,87 +595,11 @@ function compressBlob(blob,maxD,q){
       var W=img.naturalWidth,H=img.naturalHeight,sc=Math.min(1,maxD/Math.max(W,H));
       var c=document.createElement('canvas');c.width=Math.round(W*sc);c.height=Math.round(H*sc);
       c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      c.toBlob(function(b){
-        /* Release canvas memory immediately — iOS Safari won't GC it otherwise */
-        c.width=0;c.height=0;c=null;img=null;
-        ok(b||null);
-      },'image/jpeg',q);
+      c.toBlob(function(b){ok(b||null)},'image/jpeg',q);
     };
     img.onerror=function(){URL.revokeObjectURL(u);ok(null)};
     img.src=u;
   });
-}
-
-/* ─────────────────────────────────────────────
-   ROTATE LABEL PHOTO — 90° CW
-   Draws the blob onto a canvas rotated, then
-   saves as a new JPEG blob. The actual pixel
-   data changes so Bulk AI reads it correctly.
-───────────────────────────────────────────── */
-function rotateBlob90(blob){
-  return new Promise(function(ok,fail){
-    if(!blob){fail(new Error('No blob'));return}
-    var u=URL.createObjectURL(blob);
-    var img=new Image();
-    img.onload=function(){
-      URL.revokeObjectURL(u);
-      var W=img.naturalWidth,H=img.naturalHeight;
-      var c=document.createElement('canvas');
-      c.width=H;c.height=W;
-      var ctx=c.getContext('2d');
-      ctx.translate(H,0);
-      ctx.rotate(Math.PI/2);
-      ctx.drawImage(img,0,0,W,H);
-      c.toBlob(function(b){
-        c.width=0;c.height=0;c=null;img=null;
-        if(b)ok(b);else fail(new Error('Canvas toBlob failed'));
-      },'image/jpeg',0.92);
-    };
-    img.onerror=function(){URL.revokeObjectURL(u);fail(new Error('Image load failed'))};
-    img.src=u;
-  });
-}
-
-async function rotateLabelInLT(){
-  if(_rotating)return;
-  var m=getM(ltModId);if(!m||!m.lblob)return;
-  var btn=document.getElementById('ltRotateBtn');
-  btn.disabled=true;btn.textContent='...';
-  _rotating=true;
-  try{
-    var rotated=await rotateBlob90(m.lblob);
-    m.lblob=rotated;m.lnm='label.jpg';
-    revokeSingleBlob(m.id,'l');
-    document.getElementById('ltImg').src=blobURL(m.lblob,m.id,'l');
-    dbSave(m);flashSaved();
-    render(m.id);
-    notify('Label rotated 90\u00B0');
-  }catch(e){
-    console.error('Rotate err',e);
-    notify('Rotation failed','warn');
-  }
-  btn.disabled=false;btn.textContent='\u21BB ROTATE';
-  _rotating=false;
-}
-
-async function rotateLabel(id){
-  if(_rotating)return;
-  var m=getM(id);if(!m||!m.lblob)return;
-  _rotating=true;
-  var rbtn=document.querySelector('#C'+id+' .rotate-btn');
-  if(rbtn){rbtn.disabled=true;rbtn.textContent='...';}
-  try{
-    var rotated=await rotateBlob90(m.lblob);
-    m.lblob=rotated;m.lnm='label.jpg';
-    revokeSingleBlob(m.id,'l');
-    dbSave(m);flashSaved();
-    render(m.id);
-    notify('Label rotated 90\u00B0');
-  }catch(e){
-    console.error('Rotate err',e);
-    notify('Rotation failed','warn');
-  }
-  _rotating=false;
 }
 
 /* ─────────────────────────────────────────────
@@ -712,40 +617,24 @@ function mkzip(files){
   var cds=[],cdo=off,cds_=0;
   for(var i=0;i<locs.length;i++){var f=locs[i];var cd=cat(SC,u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(f.crc),u32(f.sz),u32(f.sz),u16(f.nm.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(f.off),f.nm);cds.push(cd);cds_+=cd.length}
   var eocd=cat(SE,u16(0),u16(0),u16(locs.length),u16(locs.length),u32(cds_),u32(cdo),u16(0));
-  /* Calculate total size, then write sequentially — no .apply call stack risk */
-  var total=0;
-  for(var i=0;i<locs.length;i++)total+=locs[i].lh.length+locs[i].data.length;
-  for(var i=0;i<cds.length;i++)total+=cds[i].length;
-  total+=eocd.length;
-  var out=new Uint8Array(total),pos=0;
-  for(var i=0;i<locs.length;i++){out.set(locs[i].lh,pos);pos+=locs[i].lh.length;out.set(locs[i].data,pos);pos+=locs[i].data.length}
-  for(var i=0;i<cds.length;i++){out.set(cds[i],pos);pos+=cds[i].length}
-  out.set(eocd,pos);
-  return out;
+  var p=[];for(var i=0;i<locs.length;i++){p.push(locs[i].lh);p.push(locs[i].data)}for(var i=0;i<cds.length;i++)p.push(cds[i]);p.push(eocd);
+  return cat.apply(null,p);
 }
 
 /* ─────────────────────────────────────────────
    AI SCAN
+   Reads Blob directly — no conversion to data URL
 ───────────────────────────────────────────── */
 async function aiScan(blob){
   var key=getANK();
   if(!key)throw new Error('AI locked \u2014 enter password in \u2699 Settings');
   if(!navigator.onLine)throw new Error('Offline \u2014 AI unavailable');
-  /* Compress with 5s safety timeout — if toBlob hangs, fall back to original */
-  var small;
-  try{
-    small=await Promise.race([
-      compressBlob(blob,1024,.80),
-      new Promise(function(_,rej){setTimeout(function(){rej(new Error('compress timeout'))},5000)})
-    ]);
-  }catch(e){small=null}
-  if(!small)small=blob;
-  var ab=await small.arrayBuffer();small=null;
+  /* Read blob as ArrayBuffer, convert to base64 in chunks */
+  var ab=await blob.arrayBuffer();
   var bytes=new Uint8Array(ab);ab=null;
   var bin='',ch=8192;
   for(var i=0;i<bytes.length;i+=ch)bin+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+ch,bytes.length)));
   var b64=btoa(bin);bytes=null;bin=null;
-  /* Build body string then release b64 BEFORE fetch starts */
   var body=JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:60,messages:[{role:'user',content:[
     {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
     {type:'text',text:'Solar PV module label. Serial number is directly below the barcode (~22 chars, e.g. E2FXB523M061202341217804). Return ONLY the serial number. If not readable reply NOT_FOUND.'}
@@ -760,11 +649,7 @@ async function aiScan(blob){
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:body
     });
-  }catch(e){
-    clearTimeout(timer);body=null;
-    if(e.name==='AbortError')throw new Error('AI timed out (60s) \u2014 weak signal?');
-    throw e;
-  }
+  }catch(e){clearTimeout(timer);body=null;if(e.name==='AbortError')throw new Error('AI timed out (60s)');throw e}
   clearTimeout(timer);body=null;
   var data=await resp.json();
   if(!resp.ok){var msg=(data.error&&(data.error.message||data.error.type))||JSON.stringify(data.error||data);throw new Error('Claude API: '+msg+' (HTTP '+resp.status+')')}
@@ -783,7 +668,7 @@ function lName(n,sn,ext){return 'N'+n+'_SN_('+sn+').'+ext}
 ───────────────────────────────────────────── */
 function buildGrid(){
   var g=document.getElementById('mvGrid');g.innerHTML='';
-  var done=0,prog=0,frag=document.createDocumentFragment();
+  var done=0,prog=0;
   for(var i=1;i<=TOTAL;i++){
     var m=mvpsMeta[i]||{status:'empty',count:0};
     if(m.status==='done')done++;else if(m.status==='progress')prog++;
@@ -791,13 +676,11 @@ function buildGrid(){
     var cnt=m.count>0?m.count+' mod'+(m.count===1?'':'s'):'';
     d.innerHTML='<div class="gn">MVPS-'+i+'</div><div class="gc2">'+(cnt||'&nbsp;')+'</div><div class="gd"></div>';
     d.addEventListener('click',function(){openMvps(+this.getAttribute('data-id'))});
-    frag.appendChild(d);
+    g.appendChild(d);
   }
-  g.appendChild(frag);
   document.getElementById('sDone').textContent=done;
   document.getElementById('sProg').textContent=prog;
   document.getElementById('sRem').textContent=TOTAL-done-prog;
-  updTotalMods();
 }
 function updHomeCard(id){
   var m=mvpsMeta[id]||{status:'empty',count:0};
@@ -807,13 +690,6 @@ function updHomeCard(id){
   var done=0,prog=0;
   for(var i=1;i<=TOTAL;i++){var x=mvpsMeta[i]||{};if(x.status==='done')done++;else if(x.status==='progress')prog++}
   document.getElementById('sDone').textContent=done;document.getElementById('sProg').textContent=prog;document.getElementById('sRem').textContent=TOTAL-done-prog;
-  updTotalMods();
-}
-/* Count total modules across all MVPSs from meta */
-function updTotalMods(){
-  var t=0;
-  for(var i=1;i<=TOTAL;i++){var x=mvpsMeta[i];if(x&&x.count)t+=x.count}
-  var el=document.getElementById('sTotalMods');if(el)el.textContent=t;
 }
 
 /* ─────────────────────────────────────────────
@@ -821,21 +697,8 @@ function updTotalMods(){
 ───────────────────────────────────────────── */
 function showPg(id){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on')});document.getElementById(id).classList.add('on')}
 function goHome(){
-  /* Save MVPS status before leaving so grid colors are correct */
-  if(curId){
-    clearTimeout(_metaTimer);
-    var cur=mvpsMeta[curId]||{status:'empty'};
-    /* If not manually marked done, set progress when modules exist */
-    if(cur.status!=='done'){
-      var ns=mods.length>0?'progress':'empty';
-      dbSaveMeta(curId,ns,mods.length);
-    } else {
-      dbSaveMeta(curId,'done',mods.length);
-    }
-    updHomeCard(curId);
-  }
+  if(curId){var cur=mvpsMeta[curId]||{status:'empty'};if(cur.status!=='done')dbSaveMeta(curId,mods.length>0?'progress':'empty',mods.length);updHomeCard(curId)}
   revokeBlobURLs();curId=null;mods=[];showPg('pgHome');
-  updTotalMods();
 }
 
 async function openMvps(id){
@@ -852,13 +715,15 @@ async function openMvps(id){
   saved.sort(function(a,b){return a.num-b.num});
   for(var i=0;i<saved.length;i++){
     var s=saved[i];
+    /* Handle both old format (furl/lurl data URLs) and new format (fblob/lblob Blobs) */
     var fblob=s.fblob||null;
     var lblob=s.lblob||null;
+    /* If old record had data URLs, convert to Blob on the fly */
     if(!fblob&&s.furl)fblob=dataURLtoBlob(s.furl);
     if(!lblob&&s.lurl)lblob=dataURLtoBlob(s.lurl);
     mods.push({id:s.id,num:s.num,sn:s.sn||'',ok:s.ok||false,editing:false,
                fblob:fblob,lblob:lblob,
-               fnm:s.fnm||null,lnm:s.lnm||null,
+               fnm:s.fnm||s.fnm||null,lnm:s.lnm||null,
                synced:s.synced||false,airtableId:s.airtableId||null});
   }
 
@@ -868,18 +733,13 @@ async function openMvps(id){
     recount();updDoneBtn();updBulkBadge();return;
   }
 
+  /* Lazy render — 5 at a time with 60ms gap */
   var idx=0;
   function renderBatch(){
-    var frag=document.createDocumentFragment();
     var end=Math.min(idx+5,mods.length);
-    for(var i=idx;i<end;i++){
-      var tmp=document.createElement('div');
-      tmp.innerHTML=buildCard(mods[i]);
-      while(tmp.firstChild)frag.appendChild(tmp.firstChild);
-    }
-    document.getElementById('modList').appendChild(frag);
+    for(var i=idx;i<end;i++)document.getElementById('modList').insertAdjacentHTML('beforeend',buildCard(mods[i]));
     idx=end;
-    if(idx<mods.length){document.getElementById('loadMore').textContent='Loading '+idx+'/'+mods.length+'...';requestAnimationFrame(function(){setTimeout(renderBatch,40)})}
+    if(idx<mods.length){document.getElementById('loadMore').textContent='Loading '+idx+'/'+mods.length+'...';setTimeout(renderBatch,60)}
     else document.getElementById('loadMore').classList.add('hid');
     recount();
   }
@@ -895,15 +755,11 @@ function updDoneBtn(){
   db.className='btn b-done'+(isDone?' mk':'');
 }
 function toggleDone(){
-  /* Flush any pending deferred meta update first */
-  clearTimeout(_metaTimer);
-  try{
-    var meta=mvpsMeta[curId]||{status:'progress'},ns=meta.status==='done'?'progress':'done';
-    if(ns==='done'&&!mods.filter(function(m){return m.ok}).length){notify('No confirmed modules yet','warn');return}
-    var ok=mods.filter(function(m){return m.ok}).length;
-    dbSaveMeta(curId,ns,mods.length);updDoneBtn();updHomeCard(curId);
-    notify(ns==='done'?'MVPS-'+curId+' marked done':'Marked as in progress');
-  }catch(e){console.error('toggleDone',e);notify('Error marking done','warn')}
+  var meta=mvpsMeta[curId]||{status:'progress'},ns=meta.status==='done'?'progress':'done';
+  if(ns==='done'&&!mods.filter(function(m){return m.ok}).length){notify('No confirmed modules yet','warn');return}
+  var ok=mods.filter(function(m){return m.ok}).length;
+  dbSaveMeta(curId,ns,ok);updDoneBtn();updHomeCard(curId);
+  notify(ns==='done'?'MVPS-'+curId+' marked done':'Marked as in progress');
 }
 
 /* ─────────────────────────────────────────────
@@ -917,15 +773,15 @@ function addMod(){
   document.getElementById('mvEmpty').style.display='none';
   document.getElementById('modList').insertAdjacentHTML('beforeend',buildCard(m));
   recount();updMeta();updBulkBadge();
-  setTimeout(function(){var el=document.getElementById('C'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'})},120);
+  setTimeout(function(){document.getElementById('C'+id)?.scrollIntoView({behavior:'smooth',block:'center'})},120);
 }
 function startHold(id,el){
   el._ht=setTimeout(function(){
     el.classList.remove('holding');var m=getM(id);if(!m)return;
     if(!confirm('Delete module N'+m.num+'?\nCannot be undone.'))return;
-    ['f','l'].forEach(function(s){revokeSingleBlob(id,s)});
+    ['f','l'].forEach(function(s){var k=id+'-'+s;if(blobURLs[k]){URL.revokeObjectURL(blobURLs[k]);delete blobURLs[k]}});
     dbDel(id);mods=mods.filter(function(x){return x.id!==id});
-    var card=document.getElementById('C'+id);if(card)card.remove();
+    document.getElementById('C'+id)?.remove();
     recount();updMeta();updBulkBadge();
     if(!mods.length)document.getElementById('mvEmpty').style.display='';
     notify('Module deleted');
@@ -946,8 +802,8 @@ function buildCard(m){
   var lurl=s2?blobURL(m.lblob,m.id,'l'):null;
 
   var snTxt=dn?(m.editing
-    ?'<input type="text" id="ei'+m.id+'" value="'+esc(m.sn)+'" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" style="background:var(--s2);border:1px solid var(--ac);border-radius:5px;color:#fff;font-family:inherit;font-size:13px;font-weight:700;padding:2px 8px;outline:none;width:130px;letter-spacing:.04em" oninput="getM(\''+m.id+'\').sn=this.value.trim().toUpperCase()" onkeydown="if(event.key===\'Enter\')doneEdit(\''+m.id+'\')">'
-    :'<span class="csn">'+esc(m.sn)+'</span>')
+    ?'<input type="text" id="ei'+m.id+'" value="'+m.sn+'" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" style="background:var(--s2);border:1px solid var(--ac);border-radius:5px;color:#fff;font-family:inherit;font-size:13px;font-weight:700;padding:2px 8px;outline:none;width:130px;letter-spacing:.04em" oninput="getM(\''+m.id+'\').sn=this.value.trim().toUpperCase()" onkeydown="if(event.key===\'Enter\')doneEdit(\''+m.id+'\')">'
+    :'<span class="csn">'+m.sn+'</span>')
     :'<span class="csn csn-dim">'+(s2?'ENTER S/N BELOW':s1?'STEP 2: TAKE LABEL':'STEP 1: TAKE FRONT')+'</span>';
   var eBtn=dn?(m.editing?'<button class="btn b-edit" onclick="doneEdit(\''+m.id+'\')">SAVE</button>':'<button class="btn b-edit" onclick="startEdit(\''+m.id+'\')">EDIT</button>'):'';
   var delBtn='<div class="dh" id="dh'+m.id+'" onmousedown="startHold(\''+m.id+'\',this)" ontouchstart="startHold(\''+m.id+'\',this)" onmouseup="endHold(this)" onmouseleave="endHold(this)" ontouchend="endHold(this)" ontouchcancel="endHold(this)"><div class="dhf"></div><span style="position:relative;z-index:1;color:var(--mu)">&#128465;</span></div>';
@@ -959,39 +815,29 @@ function buildCard(m){
   var lc=lurl?'<img class="pimg" src="'+lurl+'" onclick="openLT(\''+m.id+'\')" style="cursor:pointer">'
     :'<div class="ph'+(s1?'':' off')+'"'+(s1?' onclick="cap(\''+m.id+'\',\'label\')"':'')+'>'+
     '<div class="ei">&#128290;</div><div class="et">'+(s1?'TAP TO SHOOT':'AFTER STEP 1')+'</div></div>';
-
-  var lActions='';
-  if(s2){
-    lActions='<div class="photo-actions">';
-    if(!dn) lActions+='<button class="retake-btn" onclick="cap(\''+m.id+'\',\'label\')">&#8635; RETAKE</button>';
-    lActions+='<button class="rotate-btn" onclick="rotateLabel(\''+m.id+'\')">&#8635; ROTATE</button>';
-    lActions+='</div>';
-  }
+  var lRetake=(!dn&&s2)?'<button class="retake-btn" onclick="cap(\''+m.id+'\',\'label\')">&#8635; RETAKE</button>':'';
   var ln=dn?'<div class="pnm rdy">'+lName(m.num,m.sn,le)+'</div>':'<div class="pnm dim">'+(s2?'tap photo to read':'not taken')+'</div>';
 
   var ltRow=(!dn&&s2)?'<div class="lt-row"><button class="btn b-lt" onclick="openLT(\''+m.id+'\')">&#128269; LIVE TEXT \u2014 TAP TO READ SERIAL NUMBER</button></div>':'';
-  var iRow=(!dn&&s1&&s2)?'<div class="irow"><label>S/N</label><input type="text" id="si'+m.id+'" value="'+esc(m.sn)+'" placeholder="Type or paste here" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" oninput="updSN(\''+m.id+'\',this.value)" onkeydown="if(event.key===\'Enter\')setMod(\''+m.id+'\')"><button class="btn b-set" id="bs'+m.id+'" onclick="setMod(\''+m.id+'\')"'+(m.sn?'':' disabled')+'>SET</button></div>':'';
+  var iRow=(!dn&&s1&&s2)?'<div class="irow"><label>S/N</label><input type="text" id="si'+m.id+'" value="'+m.sn+'" placeholder="Type or paste here" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" oninput="updSN(\''+m.id+'\',this.value)" onkeydown="if(event.key===\'Enter\')setMod(\''+m.id+'\')"><button class="btn b-set" id="bs'+m.id+'" onclick="setMod(\''+m.id+'\')"'+(m.sn?'':' disabled')+'>SET</button></div>':'';
 
   return '<div class="card" id="C'+m.id+'">'+
     '<div class="ch"><div class="chl"><span class="nb">N'+m.num+'</span>'+snTxt+'</div><div class="chr">'+eBtn+delBtn+'</div></div>'+
     '<div class="pills"><div class="pill '+p1+'"></div><div class="pill '+p2+'"></div><div class="pill '+p3+'"></div></div>'+
     '<div class="photos"><div class="pc"><div class="plbl">&#9312; FRONT</div>'+fc+fn+'</div>'+
-    '<div class="pc"><div class="plbl">&#9313; LABEL</div>'+lc+lActions+ln+'</div></div>'+ltRow+iRow+'</div>';
+    '<div class="pc"><div class="plbl">&#9313; LABEL</div>'+lc+lRetake+ln+'</div></div>'+ltRow+iRow+'</div>';
 }
 
 function render(id){var m=getM(id);if(!m)return;var ex=document.getElementById('C'+id);if(ex)ex.outerHTML=buildCard(m);recount()}
 function updSN(id,v){var m=getM(id);if(m)m.sn=v.trim().toUpperCase();var b=document.getElementById('bs'+id);if(b)b.disabled=!v.trim()}
-function setMod(id){var m=getM(id);if(!m||!m.sn)return;m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();notify('N'+m.num+' confirmed: '+m.sn)}
+function setMod(id){var m=getM(id);if(!m||!m.sn)return;m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(id);updBulkBadge();notify('N'+m.num+' confirmed: '+m.sn)}
 function startEdit(id){var m=getM(id);if(m)m.editing=true;render(id);setTimeout(function(){var e=document.getElementById('ei'+id);if(e){e.focus();e.select()}},80)}
 function doneEdit(id){var m=getM(id);if(!m)return;var e=document.getElementById('ei'+id);if(e&&e.value.trim())m.sn=e.value.trim().toUpperCase();m.editing=false;dbSaveSN(m);flashSaved();render(id);notify('N'+m.num+' updated: '+m.sn)}
 function recount(){var ok=mods.filter(function(m){return m.ok}).length;document.getElementById('mvSub').textContent='MVPS \u00B7 '+ok+'/'+mods.length+' confirmed'}
-/* Debounced updMeta — prevents IDB + DOM storm when confirming modules rapidly */
-function deferUpdMeta(){clearTimeout(_metaTimer);_metaTimer=setTimeout(updMeta,150)}
 function updMeta(){
-  clearTimeout(_metaTimer);
   if(!curId)return;
-  var cur=mvpsMeta[curId]||{status:'empty'};
-  dbSaveMeta(curId,cur.status==='done'?'done':(mods.length>0?'progress':'empty'),mods.length);
+  var ok=mods.filter(function(m){return m.ok}).length,cur=mvpsMeta[curId]||{status:'empty'};
+  dbSaveMeta(curId,cur.status==='done'?'done':(mods.length>0?'progress':'empty'),ok);
   updHomeCard(curId);updDoneBtn();
 }
 function updBulkBadge(){
@@ -1001,6 +847,7 @@ function updBulkBadge(){
 
 /* ─────────────────────────────────────────────
    CAPTURE
+   File object stored as-is (it IS a Blob).
 ───────────────────────────────────────────── */
 function cap(id,type){var el=document.getElementById(type==='front'?'ifront':'ilabel');el.value='';el._id=id;el._type=type;el.click()}
 document.getElementById('ifront').addEventListener('change',function(){onPhoto(this._id,'front',this.files[0])});
@@ -1009,11 +856,12 @@ document.getElementById('ilabel').addEventListener('change',function(){onPhoto(t
 function onPhoto(id,type,file){
   if(!file)return;var m=getM(id);if(!m)return;
   if(type==='front'){
-    revokeSingleBlob(id,'f');
+    /* Revoke old object URL if any */
+    var k=id+'-f';if(blobURLs[k]){URL.revokeObjectURL(blobURLs[k]);delete blobURLs[k]}
     m.fblob=file;m.fnm=file.name;
     dbSave(m);flashSaved();updMeta();render(id);
   } else {
-    revokeSingleBlob(id,'l');
+    var k2=id+'-l';if(blobURLs[k2]){URL.revokeObjectURL(blobURLs[k2]);delete blobURLs[k2]}
     m.lblob=file;m.lnm=file.name;
     dbSave(m);flashSaved();render(id);updBulkBadge();
     setTimeout(function(){notify('Label saved \u2014 tap LIVE TEXT to read S/N')},200);
@@ -1030,8 +878,6 @@ function openLT(id){
   document.getElementById('ltImg').src=blobURL(m.lblob,m.id,'l')||'';
   var inp=document.getElementById('ltInp');inp.value=m.sn||'';
   document.getElementById('ltBtn').disabled=!inp.value.trim();
-  document.getElementById('ltRotateBtn').disabled=false;
-  document.getElementById('ltRotateBtn').textContent='\u21BB ROTATE';
   document.getElementById('mLT').classList.remove('hid');
   setTimeout(function(){inp.focus()},400);
 }
@@ -1039,7 +885,7 @@ function ltConfirm(){
   var val=document.getElementById('ltInp').value.trim().toUpperCase();
   if(!val){notify('Enter the serial number','warn');return}
   var m=getM(ltModId);if(!m){cm('mLT');return}
-  cm('mLT');m.sn=val;m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(ltModId);updBulkBadge();
+  cm('mLT');m.sn=val;m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(ltModId);updBulkBadge();
   notify('N'+m.num+' confirmed: '+val);
 }
 
@@ -1079,7 +925,7 @@ async function bkScanAll(){
     var m=todo[i];
     document.getElementById('bkScanSub').textContent='N'+m.num+' ('+(i+1)+'/'+todo.length+')';
     var res=await bkScanOne(m);results.push(res);
-    if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(m.id)}
+    if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(m.id)}
     document.getElementById('bkBar').style.width=Math.round((i+1)/todo.length*100)+'%';
     await wait(350);
   }
@@ -1146,25 +992,25 @@ async function bkRescanOne(id){
   var rsBtn=row.querySelector('.b-rescan');if(rsBtn){rsBtn.textContent='...';rsBtn.disabled=true}
   row.style.borderColor='var(--ac)';
   var res=await bkScanOne(m);
-  if(rsBtn){rsBtn.textContent='\u21BB RESCAN';rsBtn.disabled=false}
-  if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(m.id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 matched');return}
+  if(rsBtn){rsBtn.textContent='\u8635 RESCAN';rsBtn.disabled=false}
+  if(res.status==='match'){m.sn=res.ltVal;m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(m.id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 matched');return}
   var newRow=res.status==='diff'?mkDiffRow(res):res.status==='filled'?mkFillRow(res):mkMissRow(res);
   row.parentNode.replaceChild(newRow,row);
 }
 function bkInpUpd(id,v){var m=getM(id);if(m)m.sn=v.trim().toUpperCase();var b=document.getElementById('bset-'+id);if(b)b.disabled=!v.trim()}
 function bkPick(id,val){
-  var m=getM(id);if(!m)return;m.sn=val.toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
+  var m=getM(id);if(!m)return;m.sn=val.toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkConfirm(id){
   var m=getM(id);if(!m)return;
   var inp=document.getElementById('bi-'+id);
   if(inp&&inp.value.trim())m.sn=inp.value.trim().toUpperCase();
   if(!m.sn)return;
-  m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();deferUpdMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
+  m.sn=m.sn.trim().toUpperCase();m.ok=true;dbSaveSN(m);flashSaved();updMeta();render(id);updBulkBadge();bkRemoveRow(id);notify('N'+m.num+' \u2713 '+m.sn);
 }
 function bkRemoveRow(id){
   var row=document.getElementById('br-'+id);if(!row)return;
-  row.style.borderColor='var(--gn)';row.style.opacity='0';
+  row.style.borderColor='var(--gn)';row.style.opacity='0';row.style.transition='opacity .3s';
   setTimeout(function(){
     if(row.parentNode)row.parentNode.removeChild(row);
     var rem=document.getElementById('bkList').querySelectorAll('.brow').length;
@@ -1174,6 +1020,9 @@ function bkRemoveRow(id){
 
 /* ─────────────────────────────────────────────
    SYNC
+   Cursor reads one record at a time.
+   Blob handed directly to FormData — never
+   decoded into JS ArrayBuffer/memory.
 ───────────────────────────────────────────── */
 async function runSync(force){
   force=!!force;
@@ -1190,78 +1039,71 @@ async function runSync(force){
 
   var done=0,errs=0,today=new Date().toISOString().split('T')[0];
 
+  /* Step 1: collect IDs only — fast, no async inside transaction */
   sub.textContent='Finding unsynced modules...';
   var ids=await dbGetSyncList(force);
 
   if(!ids.length){
     cm('mSync');
-    notify('Nothing to sync \u2014 all up to date \u2713');
+    notify('Nothing to sync — all up to date ✓');
     return;
   }
 
   sub.textContent=ids.length+' module(s) to upload...';
   await wait(80);
 
+  /* Step 2: process each record individually, one at a time */
   for(var si=0;si<ids.length;si++){
-    /* Yield before loading record — let GC clean up previous iteration */
-    await wait(100);
-
     var m=await dbGetRecord(ids[si]);
     if(!m)continue;
 
-    /* Extract only what we need, then null the record reference */
-    var mId=m.id,mMvid=m.mvid||'?',mNum=m.num,mSn=m.sn||'?';
-    var mFblob=m.fblob||(m.furl?dataURLtoBlob(m.furl):null);
-    var mLblob=m.lblob||(m.lurl?dataURLtoBlob(m.lurl):null);
-    m=null; /* Release the full IDB record immediately */
-
     var processed=si+1;
-    sub.textContent='('+processed+'/'+ids.length+') MVPS-'+mMvid+' N'+mNum+'...';
+    sub.textContent='('+processed+'/'+ids.length+') MVPS-'+(m.mvid||'?')+' N'+m.num+'...';
     pf.style.width=Math.round((processed-1)/ids.length*100)+'%';
 
     var r=document.createElement('div');r.className='sy-row';
-    r.innerHTML='<span class="sy-t">MVPS-'+mMvid+' \u00B7 N'+mNum+' \u00B7 '+mSn+'</span>'
-      +'<span class="sy-s ss-act" id="ss-'+mId+'">SAVING...</span>';
+    r.innerHTML='<span class="sy-t">MVPS-'+(m.mvid||'?')+' \u00B7 N'+m.num+' \u00B7 '+(m.sn||'?')+'</span>'
+      +'<span class="sy-s ss-act" id="ss-'+m.id+'">SAVING...</span>';
     rows.appendChild(r);
     rows.scrollTop=rows.scrollHeight;
-    var badge=document.getElementById('ss-'+mId);
+    var badge=document.getElementById('ss-'+m.id);
 
     try{
+      /* Text record only first */
       var recId=await atCreate({
-        'Serial Number':mSn,
-        'MVPS':'MVPS-'+mMvid,
-        'Set Number':mNum,
+        'Serial Number':m.sn,
+        'MVPS':'MVPS-'+(m.mvid||''),
+        'Set Number':m.num,
         'Status':'Confirmed',
         'Date':today,
         'Synced By':AT_NAME
       });
 
+      /* Upload photos — Blob goes straight into FormData, never into JS heap */
       var fu=null,lu=null;
       try{
-        if(mFblob){
+        var fb=m.fblob||(m.furl?dataURLtoBlob(m.furl):null);
+        var lb=m.lblob||(m.lurl?dataURLtoBlob(m.lurl):null);
+        if(fb){
           if(badge)badge.textContent='FRONT...';
-          var fc=await compressBlob(mFblob,1920,.82)||mFblob;
-          mFblob=null; /* Release original blob */
-          fu=await uploadBlob(fc,fName(mNum,mSn,'jpg'));
-          fc=null;
-          await wait(300);
+          var fc=await compressBlob(fb,1920,.82)||fb; /* ~1MB */
+          fu=await uploadBlob(fc,fName(m.num,m.sn,'jpg'));
+          fc=null;fb=null;await wait(400);
         }
-        if(mLblob){
+        if(lb){
           if(badge)badge.textContent='LABEL...';
-          var lc=await compressBlob(mLblob,1920,.82)||mLblob;
-          mLblob=null; /* Release original blob */
-          lu=await uploadBlob(lc,lName(mNum,mSn,'jpg'));
-          lc=null;
-          await wait(300);
+          var lc=await compressBlob(lb,1920,.82)||lb; /* ~1MB */
+          lu=await uploadBlob(lc,lName(m.num,m.sn,'jpg'));
+          lc=null;lb=null;await wait(400);
         }
         var pf2={};
-        if(fu)pf2['Front Photo']=[{url:fu,filename:fName(mNum,mSn,'jpg')}];
-        if(lu)pf2['Label Photo']=[{url:lu,filename:lName(mNum,mSn,'jpg')}];
+        if(fu)pf2['Front Photo']=[{url:fu,filename:fName(m.num,m.sn,'jpg')}];
+        if(lu)pf2['Label Photo']=[{url:lu,filename:lName(m.num,m.sn,'jpg')}];
         if(fu||lu)await atPatch(recId,pf2);
-      }catch(pe){console.warn('Photos N'+mNum,pe.message)}
+      }catch(pe){console.warn('Photos N'+m.num,pe.message)}
 
       if(badge){badge.className='sy-s ss-ok';badge.textContent='DONE'}
-      dbMarkSynced(mId,recId);done++;
+      dbMarkSynced(m.id,recId);done++;
 
     }catch(e){
       errs++;
@@ -1269,12 +1111,10 @@ async function runSync(force){
       var ed=document.createElement('div');
       ed.style.cssText='font-size:10px;color:var(--rd);margin-top:3px;word-break:break-all';
       ed.textContent=e.message;r.appendChild(ed);
-      console.error('Sync N'+mNum,e);
+      console.error('Sync N'+m.num,e);
     }
-    /* Release any remaining refs */
-    mFblob=null;mLblob=null;
-    await wait(200);
-  }
+    await wait(500);
+  } /* end for */
 
   sub.textContent=done+' uploaded'+(errs?' \u00B7 '+errs+' failed':'');
   pf.style.width='100%';cls.classList.remove('hid');
@@ -1282,17 +1122,13 @@ async function runSync(force){
   updSyncStatus();
 }
 
+/* Upload Blob directly — no ArrayBuffer, no data URL, no JS heap */
 async function uploadBlob(blob,fname){
   var form=new FormData();
   form.append('file',blob,fname);
   form.append('upload_preset',CLD_PRESET);
   form.append('public_id',fname.replace(/\.jpg$/,''));
-  var ctrl=new AbortController();
-  var timer=setTimeout(function(){ctrl.abort()},30000);
-  var r;
-  try{r=await fetch('https://api.cloudinary.com/v1_1/'+CLD_CLOUD+'/image/upload',{method:'POST',body:form,signal:ctrl.signal})}
-  catch(e){clearTimeout(timer);if(e.name==='AbortError')throw new Error('Upload timed out');throw e}
-  clearTimeout(timer);
+  var r=await fetch('https://api.cloudinary.com/v1_1/'+CLD_CLOUD+'/image/upload',{method:'POST',body:form});
   if(!r.ok)throw new Error('Cloudinary HTTP '+r.status);
   var d=await r.json();
   if(d.error)throw new Error('Cloudinary: '+d.error.message);
@@ -1300,25 +1136,17 @@ async function uploadBlob(blob,fname){
 }
 
 async function atCreate(fields){
-  var ctrl=new AbortController();var timer=setTimeout(function(){ctrl.abort()},20000);
-  var r;
-  try{r=await fetch('https://api.airtable.com/v0/'+AT_BASE+'/Modules',{method:'POST',signal:ctrl.signal,
+  var r=await fetch('https://api.airtable.com/v0/'+AT_BASE+'/Modules',{method:'POST',
     headers:{'Authorization':'Bearer '+getATK(),'Content-Type':'application/json'},
-    body:JSON.stringify({fields:fields})})}
-  catch(e){clearTimeout(timer);if(e.name==='AbortError')throw new Error('Airtable timed out');throw e}
-  clearTimeout(timer);
+    body:JSON.stringify({fields:fields})});
   var d=await r.json();
   if(!r.ok||d.error)throw new Error((d.error&&(d.error.message||JSON.stringify(d.error)))||'HTTP '+r.status);
   return d.id;
 }
 async function atPatch(recId,fields){
-  var ctrl=new AbortController();var timer=setTimeout(function(){ctrl.abort()},20000);
-  var r;
-  try{r=await fetch('https://api.airtable.com/v0/'+AT_BASE+'/Modules/'+recId,{method:'PATCH',signal:ctrl.signal,
+  var r=await fetch('https://api.airtable.com/v0/'+AT_BASE+'/Modules/'+recId,{method:'PATCH',
     headers:{'Authorization':'Bearer '+getATK(),'Content-Type':'application/json'},
-    body:JSON.stringify({fields:fields})})}
-  catch(e){clearTimeout(timer);if(e.name==='AbortError')throw new Error('Airtable timed out');throw e}
-  clearTimeout(timer);
+    body:JSON.stringify({fields:fields})});
   var d=await r.json();
   if(!r.ok||d.error)throw new Error((d.error&&(d.error.message||JSON.stringify(d.error)))||'HTTP '+r.status);
 }
@@ -1354,43 +1182,31 @@ async function buildZip(){
   var ready=mods.filter(function(m){return m.ok&&m.fblob&&m.lblob});
   var pm=document.getElementById('mProg'),spin=document.getElementById('progSpin'),
       ovt=document.getElementById('progTitle'),ovs=document.getElementById('progSub'),
-      pfEl=document.getElementById('progFill'),zl=document.getElementById('zipLink'),
+      pf=document.getElementById('progFill'),zl=document.getElementById('zipLink'),
       zu=document.getElementById('zipUrl'),cl=document.getElementById('progClose');
   spin.style.display='block';zl.classList.add('hid');cl.classList.add('hid');
-  ovt.textContent='COMPRESSING...';ovs.textContent='';pfEl.style.width='0%';pm.classList.remove('hid');
+  ovt.textContent='COMPRESSING...';ovs.textContent='';pf.style.width='0%';pm.classList.remove('hid');
   var zf=[],tot=ready.length*2,done=0;
   for(var i=0;i<ready.length;i++){
     var m=ready[i],fe=safeExt(m.fnm)||'jpg',le=safeExt(m.lnm)||'jpg';
-    /* --- front photo --- */
-    ovs.textContent='N'+m.num+' front ('+(i+1)+'/'+ready.length+')...';
-    await wait(20); /* yield so UI updates + iOS can GC */
+    ovs.textContent='N'+m.num+' front...';
     var fb=isO?m.fblob:(await compressBlob(m.fblob,comp.maxD,comp.q))||m.fblob;
-    var fAB=await fb.arrayBuffer();
-    zf.push({name:fName(m.num,m.sn,isO?fe:'jpg'),data:new Uint8Array(fAB)});
-    fb=null;fAB=null; /* release immediately */
-    pfEl.style.width=Math.round(++done/tot*100)+'%';
-    await wait(20);
-    /* --- label photo --- */
-    ovs.textContent='N'+m.num+' label ('+(i+1)+'/'+ready.length+')...';
+    zf.push({name:fName(m.num,m.sn,isO?fe:'jpg'),data:new Uint8Array(await fb.arrayBuffer())});
+    pf.style.width=Math.round(++done/tot*100)+'%';
+    ovs.textContent='N'+m.num+' label...';
     var lb=isO?m.lblob:(await compressBlob(m.lblob,comp.maxD,comp.q))||m.lblob;
-    var lAB=await lb.arrayBuffer();
-    zf.push({name:lName(m.num,m.sn,isO?le:'jpg'),data:new Uint8Array(lAB)});
-    lb=null;lAB=null;
-    pfEl.style.width=Math.round(++done/tot*100)+'%';
-    await wait(20);
+    zf.push({name:lName(m.num,m.sn,isO?le:'jpg'),data:new Uint8Array(await lb.arrayBuffer())});
+    pf.style.width=Math.round(++done/tot*100)+'%';
   }
   var csv=['Set Number,Serial Number,Front Photo,Label Photo,Date'],today=new Date().toISOString().split('T')[0];
   for(var i=0;i<ready.length;i++){var m=ready[i],fe2=safeExt(m.fnm)||'jpg',le2=safeExt(m.lnm)||'jpg';csv.push(['N'+m.num,m.sn,fName(m.num,m.sn,fe2),lName(m.num,m.sn,le2),today].join(','))}
   zf.push({name:zn+'_report.csv',data:ENC.encode(csv.join('\r\n'))});
   ovt.textContent='BUILDING ZIP...';ovs.textContent=zf.length+' files';
   await wait(60);
-  var bytes=mkzip(zf);
-  zf=null; /* release file array before creating final blob */
-  var blob=new Blob([bytes],{type:'application/zip'}),href=URL.createObjectURL(blob),fname2=zn+'.zip';
-  bytes=null;
+  var bytes=mkzip(zf),blob=new Blob([bytes],{type:'application/zip'}),href=URL.createObjectURL(blob),fname2=zn+'.zip';
   try{var a=document.createElement('a');a.href=href;a.download=fname2;document.body.appendChild(a);a.click();document.body.removeChild(a)}catch(e){}
   spin.style.display='none';ovt.textContent='ZIP READY';
-  ovs.textContent=ready.length+' module(s) \u00B7 '+fname2;
+  ovs.textContent=ready.length+' module(s) \u00B7 '+Math.round(bytes.length/1024)+'KB \u00B7 '+fname2;
   zu.href=href;zu.download=fname2;zu.textContent='\u{1F4E6} SAVE '+fname2;
   zl.classList.remove('hid');cl.classList.remove('hid');
 }
