@@ -1,4 +1,4 @@
-const CACHE = 'module-scanner-v23';
+const CACHE = 'module-scanner-v25';
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', function(e) {
